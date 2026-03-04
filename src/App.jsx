@@ -1,10 +1,9 @@
-import { BrowserRouter, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import AppRoutes from "./routes/AppRoutes";
 
-
-  function LayoutWrapper() {
+function LayoutWrapper() {
   const location = useLocation();
 
   // Hide layout for ALL dashboard roles
@@ -25,11 +24,7 @@ import AppRoutes from "./routes/AppRoutes";
 }
 
 function App() {
-  return (
-    <BrowserRouter>
-      <LayoutWrapper />
-    </BrowserRouter>
-  );
+  return <LayoutWrapper />;
 }
 
 export default App;
