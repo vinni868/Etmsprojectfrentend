@@ -1,4 +1,7 @@
-/* Color Palette - Blue Theme (No Black) */
+/* EtMS Professional Navbar Styles
+  Theme: Blue/Navy (No Black)
+*/
+
 :root {
   --deep-navy: #1a365d;
   --royal-blue: #2b6cb0;
@@ -6,25 +9,49 @@
   --sky-blue: #ebf8ff;
   --white: #ffffff;
   --text-gray: #4a5568;
+  --accent-yellow: #ecc94b;
+  --success-green: #48bb78;
+  
+  /* Heights for fixed positioning */
+  --topbar-height: 40px;
+  --header-height: 80px;
+  --nav-total-height: 120px;
 }
 
-/* Base Container Styling */
-.nav-container-flex {
-  max-width: 1400px; /* Increased for wider screens */
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between; /* This forces Logo and Auth to the ends */
-  padding: 0 30px;
+/* --- 1. GLOBAL WRAPPERS --- */
+.navbar-fixed-wrapper {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 2000;
+  background-color: var(--white);
+}
+
+/* Prevents page content from hiding under the navbar */
+.nav-spacer {
+  height: var(--nav-total-height);
   width: 100%;
 }
 
-/* 1. Top Bar Styles */
+.nav-container-flex {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 25px;
+  width: 100%;
+}
+
+/* --- 2. TOPBAR (Contact & Social) --- */
 .top-bar-blue {
   background: var(--deep-navy);
   color: var(--white);
-  padding: 10px 0;
+  height: var(--topbar-height);
+  display: flex;
+  align-items: center;
   font-size: 13px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .contact-links {
@@ -39,6 +66,14 @@
   transition: color 0.2s;
 }
 
+.contact-links a:hover {
+  color: var(--white);
+}
+
+.line-sep {
+  opacity: 0.3;
+}
+
 .social-icons-wrap {
   display: flex;
   gap: 15px;
@@ -46,46 +81,54 @@
 
 .social-icons-wrap a {
   color: var(--white);
-}
-
-/* 2. Main Header */
-.main-header-wrap {
-  background: var(--white);
-  height: 90px;
+  transition: transform 0.2s;
   display: flex;
   align-items: center;
-  box-shadow: 0 4px 15px rgba(26, 54, 93, 0.1);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
 }
 
-/* 3. LOGO (Left Side) */
+.social-icons-wrap a:hover {
+  transform: translateY(-2px);
+}
+
+/* --- 3. MAIN HEADER & LOGO --- */
+.main-header-wrap {
+  background: var(--white);
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(26, 54, 93, 0.08);
+}
+
 .brand-logo-wrap {
   display: flex;
   align-items: center;
-  text-decoration: none;
   gap: 12px;
-  flex: 0 0 auto; /* Keeps logo from shrinking */
+  text-decoration: none;
 }
 
 .logo-box-blue {
   background: linear-gradient(135deg, var(--royal-blue), var(--deep-navy));
   color: var(--white);
-  width: 48px;
-  height: 48px;
+  width: 45px;
+  height: 45px;
   border-radius: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 28px;
+  font-size: 26px;
+}
+
+.brand-titles {
+  display: flex;
+  flex-direction: column;
 }
 
 .main-title {
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 800;
   color: var(--deep-navy);
   margin: 0;
+  line-height: 1;
 }
 
 .sub-title {
@@ -93,21 +136,21 @@
   text-transform: uppercase;
   color: var(--medium-blue);
   font-weight: 700;
-  margin: 0;
-  letter-spacing: 0.5px;
+  margin-top: 2px;
+  letter-spacing: 1px;
 }
 
-/* 4. NAVIGATION LINKS (Center) */
+/* --- 4. DESKTOP NAVIGATION --- */
 .nav-links-outer {
-  flex: 1; /* This takes up all available middle space */
+  flex: 1;
   display: flex;
-  justify-content: center; /* This centers the UL inside the nav */
+  justify-content: center;
 }
 
 .nav-menu-list {
   display: flex;
   list-style: none;
-  gap: 40px;
+  gap: 30px; /* Adjusted gap to fit Counselor link */
   margin: 0;
   padding: 0;
 }
@@ -117,20 +160,54 @@
   text-decoration: none;
   font-weight: 600;
   font-size: 15px;
+  padding: 10px 0;
   display: flex;
   align-items: center;
   gap: 6px;
+  transition: color 0.3s;
   cursor: pointer;
-  padding: 10px 0;
-  transition: color 0.2s;
 }
 
-.nav-link-anchor:hover, 
+.nav-link-anchor:hover,
 .nav-link-anchor.active {
   color: var(--royal-blue);
 }
 
-/* Mega Menu Logic */
+.chev-icon {
+  font-size: 10px;
+  margin-top: 2px;
+}
+
+/* --- 5. TAGS & BADGES --- */
+.promo-tag {
+  background: var(--accent-yellow);
+  color: var(--deep-navy);
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+  margin-left: 4px;
+}
+
+.new-tag {
+  background: var(--success-green);
+  color: var(--white);
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+  margin-left: 4px;
+}
+
+.trend-label {
+  background: var(--medium-blue);
+  color: var(--white);
+  font-size: 9px;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+/* --- 6. MEGA MENU DESKTOP --- */
 .has-mega-menu {
   position: relative;
 }
@@ -141,8 +218,9 @@
   left: 50%;
   transform: translateX(-50%) translateY(15px);
   background: var(--white);
-  width: 520px;
-  box-shadow: 0 20px 40px rgba(26, 54, 93, 0.15);
+  width: 500px;
+  padding: 25px;
+  box-shadow: 0 15px 35px rgba(26, 54, 93, 0.15);
   border-top: 4px solid var(--royal-blue);
   border-radius: 0 0 12px 12px;
   visibility: hidden;
@@ -159,17 +237,17 @@
 .mega-grid-wrapper {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  padding: 30px;
-  gap: 30px;
+  gap: 25px;
 }
 
 .mega-column h3 {
-  font-size: 13px;
+  font-size: 12px;
   text-transform: uppercase;
   color: var(--deep-navy);
-  margin-bottom: 12px;
+  margin-bottom: 15px;
   border-bottom: 2px solid var(--sky-blue);
   padding-bottom: 8px;
+  letter-spacing: 0.5px;
 }
 
 .mega-column a {
@@ -178,41 +256,19 @@
   text-decoration: none;
   padding: 8px 0;
   font-size: 14px;
+  transition: padding-left 0.2s, color 0.2s;
 }
 
-/* Jobs Split Layout */
-.split-layout {
-  display: flex;
-}
-
-.split-sidebar {
-  width: 170px;
-  background: var(--sky-blue);
-  display: flex;
-  flex-direction: column;
-}
-
-.split-sidebar button {
-  border: none;
-  background: none;
-  padding: 15px 20px;
-  text-align: left;
-  font-weight: 700;
-  cursor: pointer;
+.mega-column a:hover {
   color: var(--royal-blue);
+  padding-left: 5px;
 }
 
-.split-sidebar button.active {
-  background: var(--white);
-  color: var(--deep-navy);
-}
-
-/* 5. AUTH BUTTONS (Right Side) */
+/* --- 7. AUTH BUTTONS --- */
 .auth-action-btns {
   display: flex;
   align-items: center;
   gap: 20px;
-  flex: 0 0 auto; /* Keeps buttons from shrinking */
 }
 
 .login-link {
@@ -220,6 +276,11 @@
   color: var(--royal-blue);
   font-weight: 700;
   font-size: 15px;
+  transition: color 0.2s;
+}
+
+.login-link:hover {
+  color: var(--deep-navy);
 }
 
 .register-btn-solid {
@@ -229,6 +290,7 @@
   padding: 12px 24px;
   border-radius: 8px;
   font-weight: 700;
+  font-size: 14px;
   transition: all 0.3s;
   box-shadow: 0 4px 12px rgba(43, 108, 176, 0.2);
 }
@@ -236,90 +298,113 @@
 .register-btn-solid:hover {
   background: var(--deep-navy);
   transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(26, 54, 93, 0.3);
 }
 
-/* Badges & Icons */
-.promo-tag {
-  background: #ecc94b;
-  color: var(--deep-navy);
-  font-size: 9px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-weight: 800;
-}
-
-.trend-label {
-  background: var(--medium-blue);
-  color: var(--white);
-  font-size: 9px;
-  padding: 2px 8px;
-  border-radius: 12px;
-}
-
-/* Mobile Toggle */
 .mobile-hamburger {
   display: none;
   background: none;
   border: none;
-  font-size: 24px;
+  font-size: 26px;
   color: var(--deep-navy);
+  cursor: pointer;
+  padding: 5px;
 }
 
-/* Responsive Logic */
-@media (max-width: 1100px) {
-  .nav-menu-list { gap: 20px; }
+/* --- 8. MOBILE RESPONSIVE LOGIC --- */
+
+@media (max-width: 1150px) {
+  .nav-menu-list { gap: 15px; }
+  .nav-link-anchor { font-size: 14px; }
 }
 
 @media (max-width: 1024px) {
-  .nav-links-outer { display: none; }
-  .auth-action-btns .login-link, 
-  .auth-action-btns .register-btn-solid { display: none; }
+  .hide-mobile { display: none; }
   .mobile-hamburger { display: block; }
-}
-/* --- FIXED NAVBAR LOGIC --- */
-
-/* Wrap both Top Bar and Header to fix them together */
-.top-bar-blue {
-  background: var(--deep-navy);
-  color: var(--white);
-  padding: 10px 0;
-  font-size: 13px;
-  position: fixed; /* Fixes Topbar */
-  top: 0;
-  width: 100%;
-  z-index: 1001; /* Higher than main header */
-}
-
-.main-header-wrap {
-  background: var(--white);
-  height: 85px;
-  display: flex;
-  align-items: center;
-  box-shadow: 0 4px 15px rgba(26, 54, 93, 0.1);
   
-  /* Fixed Position Logic */
-  position: fixed; 
-  top: 38px; /* Height of the top-bar-blue (adjust if your topbar is taller) */
-  width: 100%;
-  z-index: 1000;
-  transition: all 0.3s ease;
+  /* Mobile Menu Container */
+  .nav-links-outer {
+    position: fixed;
+    top: var(--nav-total-height);
+    left: -100%;
+    width: 85%;
+    height: calc(100vh - var(--nav-total-height));
+    background: var(--white);
+    box-shadow: 10px 0 30px rgba(26, 54, 93, 0.1);
+    transition: left 0.4s cubic-bezier(0.77, 0, 0.175, 1);
+    z-index: 1999;
+    overflow-y: auto;
+    display: block; /* Overrides flex */
+  }
+
+  .nav-links-outer.is-open {
+    left: 0;
+  }
+
+  .nav-menu-list {
+    flex-direction: column;
+    padding: 30px 20px;
+    gap: 0;
+  }
+
+  .nav-menu-list li {
+    border-bottom: 1px solid var(--sky-blue);
+  }
+
+  .nav-link-anchor {
+    font-size: 18px;
+    padding: 15px 0;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  /* Expandable sections on mobile */
+  .mega-menu-panel {
+    position: static;
+    transform: none;
+    width: 100%;
+    box-shadow: none;
+    visibility: visible;
+    opacity: 1;
+    display: none; /* Hidden until parent hovered/clicked */
+    padding: 0 0 15px 15px;
+    border-top: none;
+  }
+
+  .has-mega-menu:hover .mega-menu-panel {
+    display: block;
+  }
+
+  .mega-grid-wrapper {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  /* Mobile Auth Links */
+  .mobile-only-auth {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 30px 20px;
+    background: var(--sky-blue);
+  }
+
+  .mobile-only-auth a {
+    text-decoration: none;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .reg-mob {
+    background: var(--royal-blue);
+    color: var(--white) !important;
+    padding: 14px;
+    border-radius: 8px;
+  }
 }
 
-/* IMPORTANT: Since the nav is fixed, it no longer takes up space in the document.
-   You must add padding-top to your 'home-page' or 'body' in Home.css 
-   equal to the total height of the Navbar (approx 123px).
-*/
-
-/* --- Rest of your existing CSS remains the same --- */
-
-.nav-container-flex {
-  max-width: 1400px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 30px;
-  width: 100%;
+@media (max-width: 480px) {
+  .main-title { font-size: 20px; }
+  .logo-box-blue { width: 38px; height: 38px; font-size: 20px; }
+  .nav-container-flex { padding: 0 15px; }
 }
-
-/* ... existing styles for logo, nav-menu-list, etc ... */
