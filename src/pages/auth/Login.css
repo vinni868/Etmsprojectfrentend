@@ -15,7 +15,7 @@
   display: flex;
   align-items: center; /* Vertical center */
   justify-content: center; /* Horizontal center */
-  padding: 140px 20px; /* Balanced top padding */
+  padding: 10px 20px; /* Balanced top padding */
 }
 
 .login-card {
