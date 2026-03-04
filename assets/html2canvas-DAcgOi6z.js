@@ -1,0 +1,1 @@
+import{n as e}from"./index-B-aw68J5.js";export default e();
