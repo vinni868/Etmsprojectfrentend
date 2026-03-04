@@ -1,0 +1,325 @@
+/* Color Palette - Blue Theme (No Black) */
+:root {
+  --deep-navy: #1a365d;
+  --royal-blue: #2b6cb0;
+  --medium-blue: #3182ce;
+  --sky-blue: #ebf8ff;
+  --white: #ffffff;
+  --text-gray: #4a5568;
+}
+
+/* Base Container Styling */
+.nav-container-flex {
+  max-width: 1400px; /* Increased for wider screens */
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* This forces Logo and Auth to the ends */
+  padding: 0 30px;
+  width: 100%;
+}
+
+/* 1. Top Bar Styles */
+.top-bar-blue {
+  background: var(--deep-navy);
+  color: var(--white);
+  padding: 10px 0;
+  font-size: 13px;
+}
+
+.contact-links {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.contact-links a {
+  color: var(--sky-blue);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.social-icons-wrap {
+  display: flex;
+  gap: 15px;
+}
+
+.social-icons-wrap a {
+  color: var(--white);
+}
+
+/* 2. Main Header */
+.main-header-wrap {
+  background: var(--white);
+  height: 90px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4px 15px rgba(26, 54, 93, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+/* 3. LOGO (Left Side) */
+.brand-logo-wrap {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  gap: 12px;
+  flex: 0 0 auto; /* Keeps logo from shrinking */
+}
+
+.logo-box-blue {
+  background: linear-gradient(135deg, var(--royal-blue), var(--deep-navy));
+  color: var(--white);
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 28px;
+}
+
+.main-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--deep-navy);
+  margin: 0;
+}
+
+.sub-title {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--medium-blue);
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+/* 4. NAVIGATION LINKS (Center) */
+.nav-links-outer {
+  flex: 1; /* This takes up all available middle space */
+  display: flex;
+  justify-content: center; /* This centers the UL inside the nav */
+}
+
+.nav-menu-list {
+  display: flex;
+  list-style: none;
+  gap: 40px;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-link-anchor {
+  color: var(--text-gray);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 10px 0;
+  transition: color 0.2s;
+}
+
+.nav-link-anchor:hover, 
+.nav-link-anchor.active {
+  color: var(--royal-blue);
+}
+
+/* Mega Menu Logic */
+.has-mega-menu {
+  position: relative;
+}
+
+.mega-menu-panel {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(15px);
+  background: var(--white);
+  width: 520px;
+  box-shadow: 0 20px 40px rgba(26, 54, 93, 0.15);
+  border-top: 4px solid var(--royal-blue);
+  border-radius: 0 0 12px 12px;
+  visibility: hidden;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.has-mega-menu:hover .mega-menu-panel {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.mega-grid-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 30px;
+  gap: 30px;
+}
+
+.mega-column h3 {
+  font-size: 13px;
+  text-transform: uppercase;
+  color: var(--deep-navy);
+  margin-bottom: 12px;
+  border-bottom: 2px solid var(--sky-blue);
+  padding-bottom: 8px;
+}
+
+.mega-column a {
+  display: block;
+  color: var(--text-gray);
+  text-decoration: none;
+  padding: 8px 0;
+  font-size: 14px;
+}
+
+/* Jobs Split Layout */
+.split-layout {
+  display: flex;
+}
+
+.split-sidebar {
+  width: 170px;
+  background: var(--sky-blue);
+  display: flex;
+  flex-direction: column;
+}
+
+.split-sidebar button {
+  border: none;
+  background: none;
+  padding: 15px 20px;
+  text-align: left;
+  font-weight: 700;
+  cursor: pointer;
+  color: var(--royal-blue);
+}
+
+.split-sidebar button.active {
+  background: var(--white);
+  color: var(--deep-navy);
+}
+
+/* 5. AUTH BUTTONS (Right Side) */
+.auth-action-btns {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 0 0 auto; /* Keeps buttons from shrinking */
+}
+
+.login-link {
+  text-decoration: none;
+  color: var(--royal-blue);
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.register-btn-solid {
+  background: var(--royal-blue);
+  color: var(--white);
+  text-decoration: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 700;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(43, 108, 176, 0.2);
+}
+
+.register-btn-solid:hover {
+  background: var(--deep-navy);
+  transform: translateY(-2px);
+}
+
+/* Badges & Icons */
+.promo-tag {
+  background: #ecc94b;
+  color: var(--deep-navy);
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
+.trend-label {
+  background: var(--medium-blue);
+  color: var(--white);
+  font-size: 9px;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+/* Mobile Toggle */
+.mobile-hamburger {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--deep-navy);
+}
+
+/* Responsive Logic */
+@media (max-width: 1100px) {
+  .nav-menu-list { gap: 20px; }
+}
+
+@media (max-width: 1024px) {
+  .nav-links-outer { display: none; }
+  .auth-action-btns .login-link, 
+  .auth-action-btns .register-btn-solid { display: none; }
+  .mobile-hamburger { display: block; }
+}
+/* --- FIXED NAVBAR LOGIC --- */
+
+/* Wrap both Top Bar and Header to fix them together */
+.top-bar-blue {
+  background: var(--deep-navy);
+  color: var(--white);
+  padding: 10px 0;
+  font-size: 13px;
+  position: fixed; /* Fixes Topbar */
+  top: 0;
+  width: 100%;
+  z-index: 1001; /* Higher than main header */
+}
+
+.main-header-wrap {
+  background: var(--white);
+  height: 85px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4px 15px rgba(26, 54, 93, 0.1);
+  
+  /* Fixed Position Logic */
+  position: fixed; 
+  top: 38px; /* Height of the top-bar-blue (adjust if your topbar is taller) */
+  width: 100%;
+  z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+/* IMPORTANT: Since the nav is fixed, it no longer takes up space in the document.
+   You must add padding-top to your 'home-page' or 'body' in Home.css 
+   equal to the total height of the Navbar (approx 123px).
+*/
+
+/* --- Rest of your existing CSS remains the same --- */
+
+.nav-container-flex {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 30px;
+  width: 100%;
+}
+
+/* ... existing styles for logo, nav-menu-list, etc ... */

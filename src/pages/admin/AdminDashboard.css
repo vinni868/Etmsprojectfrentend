@@ -1,0 +1,137 @@
+/* ================= USER APPROVAL SECTION ================= */
+
+.user-approvals-section {
+  margin-top: 40px;
+  padding-bottom: 10px; /* removes extra bottom gap */
+}
+
+.user-approvals-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+/* Header */
+.user-approvals-card h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: #1e293b;
+}
+
+/* Table wrapper */
+.user-table-wrapper {
+  height: 320px;              /* fixed height */
+  overflow-y: auto;
+  border-radius: 10px;
+  border: 1px solid #eef2f7;
+}
+
+/* Hide ugly scrollbar (Chrome, Edge) */
+.user-table-wrapper::-webkit-scrollbar {
+  width: 6px;
+}
+
+.user-table-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.user-table-wrapper::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+/* Firefox */
+.user-table-wrapper {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+/* Table */
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+/* Sticky header */
+.user-table thead {
+  background: #f8fafc;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.user-table th {
+  padding: 14px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+  color: #475569;
+}
+
+.user-table td {
+  padding: 14px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+/* Zebra rows */
+.user-table tbody tr:nth-child(even) {
+  background: #fafafa;
+}
+
+.user-table tbody tr:hover {
+  background: #f1f5f9;
+  transition: 0.2s ease;
+}
+
+/* Status colors */
+.status-active {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.status-rejected {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.status-pending {
+  color: #d97706;
+  font-weight: 600;
+}
+
+/* Buttons */
+.action-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.approve-btn {
+  background: #22c55e;
+  color: white;
+  margin-right: 8px;
+}
+
+.approve-btn:hover {
+  background: #16a34a;
+}
+
+.reject-btn {
+  background: #ef4444;
+  color: white;
+}
+
+.reject-btn:hover {
+  background: #dc2626;
+}
+
+.completed-text {
+  font-size: 13px;
+  color: #64748b;
+}
