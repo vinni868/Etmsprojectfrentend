@@ -27,15 +27,12 @@ function TrainerAttendance() {
   const [viewMode, setViewMode] = useState("MARK"); // "MARK" or "HISTORY"
   const [attendanceHistory, setAttendanceHistory] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  // --- STATE FOR EDIT MODE ---
   const [isEditMode, setIsEditMode] = useState(false);
 
   useEffect(() => {
     if (trainerId) fetchCourses();
   }, [trainerId]);
 
-  // --- AUTO-CHECK EFFECT ---
   useEffect(() => {
     if (viewMode === "MARK" && selectedBatch && date) {
       checkExistingAttendance();
@@ -49,18 +46,15 @@ function TrainerAttendance() {
     } catch (err) { console.error("Course fetch failed", err); }
   };
 
-  // --- UPDATED: CHECK EXISTING ATTENDANCE LOGIC (FIXED EMAIL MAPPING) ---
   const checkExistingAttendance = async () => {
     setLoading(true);
     try {
       const res = await axios.get(`http://localhost:8080/api/teacher/attendance/check?batchId=${selectedBatch}&date=${date}`);
       
       if (res.data && res.data.length > 0) {
-        // Attendance exists: Map existing data
         setStudents(res.data.map(item => ({
           id: item.studentId, 
           name: item.studentName || "Student",
-          // FIX: Checking multiple possible backend field names for email
           email: item.email || item.studentEmail || item.userEmail || "N/A", 
           status: item.status,
           attendanceId: item.id 
@@ -68,13 +62,11 @@ function TrainerAttendance() {
         setTopicTaught(res.data[0].topic || "");
         setIsEditMode(true);
       } else {
-        // No attendance: Fetch fresh list of students for that batch
         setIsEditMode(false);
         setTopicTaught("");
         const freshRes = await axios.get(`http://localhost:8080/api/teacher/batches/${selectedBatch}/students`);
         setStudents(freshRes.data.map(s => ({ 
           ...s, 
-          // FIX: Ensure fresh list also maps email correctly
           email: s.email || s.studentEmail || s.userEmail || "N/A",
           status: "PRESENT", 
           attendanceId: null 
@@ -192,7 +184,9 @@ function TrainerAttendance() {
             <div className="trainer-info-tags">
               <span className="info-pill gray">ID: {trainerId}</span>
               <span className="info-pill blue">Trainer: {trainerName}</span>
-              {isEditMode && viewMode === "MARK" && <span className="info-pill orange" style={{background: '#fff3e0', color: '#f39c12'}}>Edit Mode</span>}
+              {isEditMode && viewMode === "MARK" && (
+                <span className="info-pill orange-badge">Edit Mode</span>
+              )}
             </div>
           </div>
           <div className="header-right">
@@ -202,7 +196,11 @@ function TrainerAttendance() {
                 <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
               </div>
             )}
-            <button className="save-session-btn" onClick={handleSave} disabled={viewMode === "HISTORY"}>
+            <button 
+              className={`save-session-btn ${isEditMode ? 'update' : ''}`} 
+              onClick={handleSave} 
+              disabled={viewMode === "HISTORY" || !selectedBatch}
+            >
               <FaSave /> {isEditMode ? "Update Session" : "Save Session"}
             </button>
           </div>
@@ -244,10 +242,11 @@ function TrainerAttendance() {
           
           <aside className="selection-sidebar">
             <div className="sidebar-card">
-              <h4 className="sidebar-title"><FaFilter /> Selection</h4>
-              <h4 className="sidebar-title"><FaSearch /> Search</h4>
+              <h4 className="sidebar-title"><FaFilter /> Filter & Search</h4>
+              
               <div className="form-item">
                 <div className="search-wrapper-mini">
+                  <FaSearch className="search-icon" />
                   <input type="text" placeholder="Find student..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                 </div>
               </div>
@@ -272,12 +271,11 @@ function TrainerAttendance() {
               <h4 className="sidebar-title"><FaHistory /> Report Period</h4>
               <div className="date-range-group">
                 <div className="form-item mini">
-                  <label style={{ fontSize: '12px' }}>From</label>
+                  <label>From</label>
                   <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
                 </div>
-                <br />
                 <div className="form-item mini">
-                  <label style={{ fontSize: '12px' }}>To</label>
+                  <label>To</label>
                   <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
                 </div>
               </div>
@@ -348,7 +346,6 @@ function TrainerAttendance() {
                   </tbody>
                 </table>
               ) : (
-                /* HISTORY TABLE VIEW */
                 <table className="roster-table-v2 history">
                   <thead>
                     <tr>
