@@ -25,8 +25,9 @@ function StudentCourses() {
       setLoading(true);
       // This endpoint should perform the JOIN between student_course, course_master, and batches
       const res = await axios.get(`${API_BASE}/my-courses`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+  headers: { Authorization: `Bearer ${token}` },
+  withCredentials: true
+});
       setCourses(res.data);
     } catch (err) {
       setError("Unable to load your curriculum. Please check your connection.");
@@ -104,7 +105,7 @@ function StudentCourses() {
                 {course.syllabusFileName && (
                   <button 
                     className="action-btn outline"
-                    onClick={() => window.open(`http://localhost:8080/api/admin/courses/download/${course.id}`, "_blank")}
+                    onClick={() => window.open(`http://localhost:8080/api/student/courses/download/${course.id}`, "_blank")}
                   >
                     <FaDownload /> Syllabus
                   </button>

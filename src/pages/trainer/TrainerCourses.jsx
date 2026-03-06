@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { 
-  FaBell, FaSearch, FaUser, FaKey, FaCog, FaSignOutAlt, 
-  FaBookOpen, FaLayerGroup, FaGraduationCap, FaChevronRight 
+  FaBell, FaSearch, FaUser, FaCog, FaSignOutAlt, 
+  FaBookOpen, FaLayerGroup, FaGraduationCap, FaChevronRight,
+  FaFileExport, FaInbox, FaUsers
 } from "react-icons/fa";
 import "./TrainerCourses.css";
 
@@ -18,156 +19,191 @@ function TrainerCourses() {
   const [selectedBatch, setSelectedBatch] = useState(null);
   const [students, setStudents] = useState([]);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [loading, setLoading] = useState({ courses: true, batches: false, students: false });
 
   useEffect(() => {
     if (trainerId) fetchCourses();
   }, [trainerId]);
 
   const fetchCourses = async () => {
+    setLoading(prev => ({ ...prev, courses: true }));
     try {
       const res = await axios.get(`http://localhost:8080/api/teacher/courses/${trainerId}`);
       setCourses(res.data);
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error("Error fetching courses:", err);
+    } finally {
+      setLoading(prev => ({ ...prev, courses: false }));
+    }
   };
 
   const handleCourseClick = async (course) => {
     setSelectedCourse(course);
-    setSelectedBatch(null);
+    setSelectedBatch(null); // Reset lower levels
     setStudents([]);
+    setLoading(prev => ({ ...prev, batches: true }));
     try {
       const res = await axios.get(`http://localhost:8080/api/teacher/courses/${trainerId}/${course.courseId}/batches`);
       setBatches(res.data);
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(prev => ({ ...prev, batches: false }));
+    }
   };
 
   const handleBatchClick = async (batch) => {
     setSelectedBatch(batch);
+    setLoading(prev => ({ ...prev, students: true }));
     try {
       const res = await axios.get(`http://localhost:8080/api/teacher/batches/${batch.batchId}/students`);
       setStudents(res.data);
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(prev => ({ ...prev, students: false }));
+    }
   };
 
   return (
-    <div className="trainer-dashboard-wrapper">
-      {/* HEADER SECTION */}
-      <header className="dashboard-top-nav">
-        <div className="nav-breadcrumb">
-          <span onClick={() => navigate("/trainer/dashboard")}>Dashboard</span>
-          <FaChevronRight className="divider-icon" />
-          <span className="current">Courses & Education</span>
+    <div className="trainer-app-container">
+      {/* CORPORATE NAV BAR */}
+      <nav className="corporate-nav">
+        <div className="nav-branding">
+          <div className="logo-square"><FaGraduationCap /></div>
+          <span className="brand-name">EduPortal <small>Trainer</small></span>
         </div>
 
-        <div className="nav-actions">
-          <div className="search-bar-container">
-            <FaSearch className="search-icon" />
-            <input type="text" placeholder="Quick search..." />
+        <div className="nav-center">
+          <div className="nav-search">
+            <FaSearch className="s-icon" />
+            <input type="text" placeholder="Search for courses or students..." />
           </div>
-          <div className="notification-bell">
-            <FaBell />
-            <span className="dot"></span>
-          </div>
-          <div className="user-profile-trigger" onClick={() => setShowUserMenu(!showUserMenu)}>
-            <div className="avatar-circle">{user?.name?.charAt(0)}</div>
+        </div>
+
+        <div className="nav-right">
+          <button className="icon-btn"><FaBell /><span className="badge"></span></button>
+          <div className="user-profile-wrapper" onClick={() => setShowUserMenu(!showUserMenu)}>
+            <div className="profile-info">
+              <span className="u-name">{user?.name || "Trainer"}</span>
+              <span className="u-role">Lead Instructor</span>
+            </div>
+            <div className="u-avatar">{user?.name?.charAt(0)}</div>
+            
             {showUserMenu && (
-              <div className="profile-dropdown-menu">
-                <div className="menu-item" onClick={() => navigate("/trainer/profile")}><FaUser /> Profile</div>
-                <div className="menu-item" onClick={() => navigate("/trainer/settings")}><FaCog /> Settings</div>
+              <div className="dropdown-panel">
+                <button onClick={() => navigate("/profile")}><FaUser /> Profile</button>
+                <button onClick={() => navigate("/settings")}><FaCog /> Settings</button>
                 <hr />
-                <div className="menu-item logout" onClick={() => { localStorage.clear(); navigate("/login"); }}><FaSignOutAlt /> Logout</div>
+                <button className="logout" onClick={() => { localStorage.clear(); navigate("/login"); }}>
+                  <FaSignOutAlt /> Sign Out
+                </button>
               </div>
             )}
           </div>
         </div>
-      </header>
+      </nav>
 
-      <main className="course-explorer-content">
-        {/* TOP ROW: COURSE SELECTION (Modern Horizontal Cards) */}
-        <section className="course-selection-area">
-          <div className="section-header-flex">
-            <h2><FaBookOpen /> My Active Courses</h2>
-            <span className="count-pill">{courses.length} Courses</span>
-          </div>
-          <div className="course-horizontal-list">
+      <main className="dashboard-content">
+        {/* BREADCRUMB */}
+        <div className="breadcrumb-bar">
+          <span onClick={() => navigate("/dashboard")}>Dashboard</span>
+          <FaChevronRight className="sep" />
+          <span className={!selectedCourse ? "active" : ""}>Courses</span>
+          {selectedCourse && (
+            <>
+              <FaChevronRight className="sep" />
+              <span className={!selectedBatch ? "active" : ""}>{selectedCourse.courseName}</span>
+            </>
+          )}
+        </div>
+
+        {/* STEP 1: COURSE SELECTION */}
+        <section className="section-block">
+          <h2 className="section-title">Select a Course</h2>
+          <div className="card-grid">
             {courses.map(course => (
               <div 
                 key={course.courseId} 
-                className={`modern-course-item ${selectedCourse?.courseId === course.courseId ? 'active' : ''}`}
+                className={`selection-card course-card ${selectedCourse?.courseId === course.courseId ? 'selected' : ''}`}
                 onClick={() => handleCourseClick(course)}
               >
-                <div className="course-icon-box"><FaGraduationCap /></div>
-                <div className="course-text">
-                  <h4>{course.courseName}</h4>
-                  <p>{course.totalBatches} Assigned Batches</p>
+                <div className="card-icon"><FaBookOpen /></div>
+                <div className="card-details">
+                  <h3>{course.courseName}</h3>
+                  <p>{course.totalBatches || 0} Batches Assigned</p>
                 </div>
+                <FaChevronRight className="go-icon" />
               </div>
             ))}
           </div>
         </section>
 
-        <div className="management-grid">
-          {/* MIDDLE COLUMN: BATCHES */}
-          <section className={`batch-explorer ${selectedCourse ? 'visible' : 'hidden'}`}>
-            <h3><FaLayerGroup /> Batches for {selectedCourse?.courseName}</h3>
-            <div className="batch-list-modern">
-              {batches.length > 0 ? (
-                batches.map(batch => (
-                  <div 
-                    key={batch.batchId} 
-                    className={`batch-list-item ${selectedBatch?.batchId === batch.batchId ? 'active' : ''}`}
-                    onClick={() => handleBatchClick(batch)}
-                  >
-                    <div className="batch-info">
-                      <strong>{batch.batchName}</strong>
-                      <span className={`status-label ${batch.status.toLowerCase()}`}>{batch.status}</span>
-                    </div>
-                    <FaChevronRight className="arrow" />
+        {/* STEP 2: BATCH SELECTION (Appears only after Course is selected) */}
+        {selectedCourse && (
+          <section className="section-block anim-fade-in">
+            <h2 className="section-title">Select Batch for {selectedCourse.courseName}</h2>
+            <div className="card-grid">
+              {batches.length > 0 ? batches.map(batch => (
+                <div 
+                  key={batch.batchId} 
+                  className={`selection-card batch-card ${selectedBatch?.batchId === batch.batchId ? 'selected' : ''}`}
+                  onClick={() => handleBatchClick(batch)}
+                >
+                  <div className="card-icon"><FaLayerGroup /></div>
+                  <div className="card-details">
+                    <h3>{batch.batchName}</h3>
+                    <span className={`status ${batch.status?.toLowerCase()}`}>{batch.status}</span>
                   </div>
-                ))
+                  <FaChevronRight className="go-icon" />
+                </div>
+              )) : <div className="no-data-msg">No batches found for this course.</div>}
+            </div>
+          </section>
+        )}
+
+        {/* STEP 3: STUDENT LIST (Appears only after Batch is selected) */}
+        {selectedBatch && (
+          <section className="section-block anim-fade-in">
+            <div className="section-header-flex">
+              <h2 className="section-title"><FaUsers /> Enrolled Students ({students.length})</h2>
+              <button className="btn-export"><FaFileExport /> Export List</button>
+            </div>
+            <div className="data-table-container">
+              {loading.students ? <div className="loader">Loading Students...</div> : 
+                students.length > 0 ? (
+                <table className="modern-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Email Address</th>
+                      <th>Phone Number</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {students.map(s => (
+                      <tr key={s.id}>
+                        <td>
+                          <div className="name-cell">
+                            <div className="initial-avatar">{s.name.charAt(0)}</div>
+                            {s.name}
+                          </div>
+                        </td>
+                        <td>{s.email}</td>
+                        <td>{s.phone}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               ) : (
-                <p className="placeholder-text">Select a course to view batches</p>
+                <div className="empty-state">
+                  <FaInbox size={40} />
+                  <p>No students enrolled in this batch yet.</p>
+                </div>
               )}
             </div>
           </section>
-
-          {/* RIGHT COLUMN: STUDENTS */}
-          <section className={`student-explorer ${selectedBatch ? 'visible' : 'hidden'}`}>
-             <div className="section-header-flex">
-                <h3>Enrolled Students</h3>
-                <button className="export-link">Export List</button>
-             </div>
-             <div className="student-table-container">
-                {students.length > 0 ? (
-                  <table className="modern-data-table">
-                    <thead>
-                      <tr>
-                        <th>Student Name</th>
-                        <th>Contact Email</th>
-                        <th>Phone</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {students.map(s => (
-                        <tr key={s.id}>
-                          <td className="name-cell">
-                            <div className="small-avatar">{s.name.charAt(0)}</div>
-                            {s.name}
-                          </td>
-                          <td>{s.email}</td>
-                          <td>{s.phone}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                ) : (
-                  <div className="empty-table-state">
-                    <img src="https://cdn-icons-png.flaticon.com/512/7486/7486744.png" alt="empty" />
-                    <p>Select a batch to view the student roster</p>
-                  </div>
-                )}
-             </div>
-          </section>
-        </div>
+        )}
       </main>
     </div>
   );

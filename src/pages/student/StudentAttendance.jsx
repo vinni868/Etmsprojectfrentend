@@ -1,73 +1,116 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { 
+  FaCalendarCheck, 
+  FaUserCheck, 
+  FaUserTimes, 
+  FaWalking, 
+  FaPercentage, 
+  FaSearch, 
+  FaFilter 
+} from "react-icons/fa";
 import "./StudentAttendance.css";
 
 function StudentAttendance() {
-  // Get logged-in student info from localStorage
   const user = JSON.parse(localStorage.getItem("user"));
   const studentId = user?.id;
+  const token = localStorage.getItem("token");
 
   const [courses, setCourses] = useState([]);
+  const [batches, setBatches] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState("");
+  const [selectedBatch, setSelectedBatch] = useState("");
   const [records, setRecords] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const [filter, setFilter] = useState({
+    fromDate: "",
+    toDate: "",
+  });
+
   const [summary, setSummary] = useState({
     totalClasses: 0,
     presentCount: 0,
     absentCount: 0,
+    leaveCount: 0,
     attendancePercentage: 0,
   });
-  const [loading, setLoading] = useState(false);
 
-  // 1. Fetch courses the student is enrolled in
+  // Fetch courses on mount
   useEffect(() => {
-    if (studentId) {
-      fetchStudentCourses();
-    }
+    if (studentId) fetchStudentCourses();
   }, [studentId]);
-
-  // 2. Fetch attendance and summary whenever the selected course changes
-  useEffect(() => {
-    if (studentId && selectedCourse) {
-      fetchAttendanceData();
-    }
-  }, [selectedCourse, studentId]);
 
   const fetchStudentCourses = async () => {
     try {
-      // Adjusted to match common LMS course endpoint
-      const res = await axios.get(`http://localhost:8080/api/student/courses/${studentId}`);
-      setCourses(res.data);
-      if (res.data.length > 0) {
-        setSelectedCourse(res.data[0].id);
+      const res = await axios.get("http://localhost:8080/api/student/my-courses", {
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
+      });
+
+      const data = res.data;
+      const uniqueCourses = [...new Map(data.map((item) => [item.id, item])).values()];
+
+      setCourses(uniqueCourses);
+
+      if (uniqueCourses.length > 0) {
+        setSelectedCourse(uniqueCourses[0].id);
+        const firstBatchList = data.filter((c) => c.id === uniqueCourses[0].id);
+        setBatches(firstBatchList);
+        setSelectedBatch(firstBatchList[0].batchId);
       }
     } catch (err) {
-      console.error("Failed to fetch courses", err);
+      console.error("Course fetch error:", err);
     }
   };
+
+  // Update batches when course changes
+  useEffect(() => {
+    if (!selectedCourse) return;
+    const filteredBatches = courses.filter((c) => c.id === Number(selectedCourse));
+    setBatches(filteredBatches);
+    if (filteredBatches.length > 0) {
+      setSelectedBatch(filteredBatches[0].batchId);
+    }
+  }, [selectedCourse]);
+
+  // Fetch data when batch or filter changes
+  useEffect(() => {
+    if (studentId && selectedBatch) fetchAttendanceData();
+  }, [selectedBatch, filter]);
 
   const fetchAttendanceData = async () => {
     setLoading(true);
     try {
-      // Fetch Detailed Records
-      const recordsRes = await axios.get(
-        `http://localhost:8080/api/student/attendance/${studentId}`
-      );
-      
-      // If your backend filters by course, add the query param. 
-      // Otherwise, we filter the list locally to match the selected UI course
-      const filteredRecords = recordsRes.data.filter(
-        (r) => r.batchId === parseInt(selectedCourse)
-      );
-      setRecords(filteredRecords);
+      let url = `http://localhost:8080/api/student/attendance/details/${studentId}?batchId=${selectedBatch}`;
+      if (filter.fromDate) url += `&from=${filter.fromDate}`;
+      if (filter.toDate) url += `&to=${filter.toDate}`;
 
-      // Fetch Summary from the new backend endpoint we created
-      const summaryRes = await axios.get(
-        `http://localhost:8080/api/student/attendance/summary/${studentId}`
-      );
-      setSummary(summaryRes.data);
+      const res = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
+      });
+
+      const data = res.data;
+      setRecords(data);
+
+      const total = data.length;
+      const present = data.filter((r) => r.status === "PRESENT").length;
+      const absent = data.filter((r) => r.status === "ABSENT").length;
+      const leave = data.filter((r) => r.status === "LEAVE").length;
       
+      // Percentage calculation: (Present + Leave) / Total
+      const percentage = total > 0 ? Math.round(((present + leave) / total) * 100) : 0;
+
+      setSummary({
+        totalClasses: total,
+        presentCount: present,
+        absentCount: absent,
+        leaveCount: leave,
+        attendancePercentage: percentage,
+      });
     } catch (err) {
-      console.error("Failed to fetch attendance data", err);
+      console.error("Attendance fetch error:", err);
       setRecords([]);
     } finally {
       setLoading(false);
@@ -75,97 +118,117 @@ function StudentAttendance() {
   };
 
   return (
-    <div className="attendance-page">
-      <header className="attendance-header">
-        <div className="header-content">
-          <h2>My Attendance Dashboard</h2>
-          <p>Logged in as: <strong>{user?.name || "Student"}</strong></p>
-        </div>
-      </header>
-
-      {/* Course Selector */}
-      <div className="batch-selector-container">
-        <div className="selector-box">
-          <label>Select Course/Batch:</label>
-          <select
-            value={selectedCourse}
-            onChange={(e) => setSelectedCourse(e.target.value)}
-          >
-            <option value="">-- Select Course --</option>
-            {courses.map((course) => (
-              <option key={course.id} value={course.id}>
-                {course.courseName}
-              </option>
-            ))}
-          </select>
+    <div className="attendance-portal">
+      <div className="portal-header">
+        <div className="title-area">
+          <h1>Attendance Dashboard</h1>
+          <p>Review your academic presence and session logs</p>
         </div>
       </div>
 
-      {/* Attendance Summary Cards */}
-      <div className="attendance-summary">
-        <div className="summary-card total">
-          <div className="card-icon">📚</div>
-          <div className="card-info">
+      {/* FILTER SECTION */}
+      <div className="filter-wrapper">
+        <div className="filter-item">
+          <label><FaSearch className="label-icon" /> Course</label>
+          <select value={selectedCourse} onChange={(e) => setSelectedCourse(Number(e.target.value))}>
+            {courses.map((course) => (
+              <option key={course.id} value={course.id}>{course.courseName}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="filter-item">
+          <label><FaFilter className="label-icon" /> Batch</label>
+          <select value={selectedBatch} onChange={(e) => setSelectedBatch(Number(e.target.value))}>
+            {batches.map((batch) => (
+              <option key={batch.batchId} value={batch.batchId}>{batch.batchName}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="filter-item">
+          <label>From</label>
+          <input type="date" value={filter.fromDate} onChange={(e) => setFilter({ ...filter, fromDate: e.target.value })} />
+        </div>
+
+        <div className="filter-item">
+          <label>To</label>
+          <input type="date" value={filter.toDate} onChange={(e) => setFilter({ ...filter, toDate: e.target.value })} />
+        </div>
+      </div>
+
+      {/* SUMMARY GRID */}
+      <div className="summary-grid">
+        <div className="metric-card total">
+          <FaCalendarCheck className="metric-icon" />
+          <div className="metric-content">
             <h3>{summary.totalClasses}</h3>
             <p>Total Classes</p>
           </div>
         </div>
-        <div className="summary-card present">
-          <div className="card-icon">✅</div>
-          <div className="card-info">
+
+        <div className="metric-card present">
+          <FaUserCheck className="metric-icon" />
+          <div className="metric-content">
             <h3>{summary.presentCount}</h3>
-            <p>Total Present</p>
+            <p>Present</p>
           </div>
         </div>
-        <div className="summary-card percentage">
-          <div className="card-icon">📈</div>
-          <div className="card-info">
+
+        <div className="metric-card leave">
+          <FaWalking className="metric-icon" />
+          <div className="metric-content">
+            <h3>{summary.leaveCount}</h3>
+            <p>Leave</p>
+          </div>
+        </div>
+
+        <div className="metric-card absent">
+          <FaUserTimes className="metric-icon" />
+          <div className="metric-content">
+            <h3>{summary.absentCount}</h3>
+            <p>Absent</p>
+          </div>
+        </div>
+
+        <div className="metric-card percentage">
+          <FaPercentage className="metric-icon" />
+          <div className="metric-content">
             <h3>{summary.attendancePercentage}%</h3>
-            <p>Overall Attendance</p>
+            <p>Attendance</p>
           </div>
         </div>
       </div>
 
-      {/* Attendance Table */}
-      <div className="table-container">
+      {/* TABLE SECTION */}
+      <div className="table-wrapper">
         {loading ? (
-          <div className="loading-state">
-            <div className="spinner"></div>
-            <p>Fetching your records...</p>
-          </div>
+          <div className="table-loader">Fetching attendance records...</div>
         ) : (
-          <table className="modern-table">
+          <table className="attendance-table">
             <thead>
               <tr>
                 <th>Date</th>
-                <th>Topic Taught</th>
+                <th>Topic / Description</th>
                 <th>Status</th>
               </tr>
             </thead>
             <tbody>
               {records.length > 0 ? (
-                records.map((record) => (
-                  <tr key={record.id}>
-                    <td className="date-cell">
-                      {new Date(record.attendanceDate).toLocaleDateString('en-GB', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric'
-                      })}
-                    </td>
-                    <td>{record.topic || <span className="no-data">No topic specified</span>}</td>
+                records.map((r, idx) => (
+                  <tr key={idx}>
+                    <td className="date-col">{new Date(r.attendance_date).toLocaleDateString()}</td>
+                    <td>{r.topic || "Regular Session"}</td>
                     <td>
-                      <span className={`status-badge ${record.status.toLowerCase()}`}>
-                        {record.status}
+                      <span className={`status-label ${r.status.toLowerCase()}`}>
+                        {r.status}
                       </span>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="3" className="empty-table">
-                    No attendance records found for this selection.
-                  </td>
+                  <td colSpan="3" className="no-data-msg">No attendance logs found for the selected criteria.</td>
                 </tr>
               )}
             </tbody>
