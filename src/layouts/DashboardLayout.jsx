@@ -3,9 +3,8 @@ import { Outlet, useNavigate, NavLink, Link } from "react-router-dom";
 import { 
   FaPhoneAlt, FaEnvelope, FaFacebookF, FaTwitter, 
   FaLinkedinIn, FaInstagram, FaGraduationCap, FaSignOutAlt,
-  FaChevronDown, FaCog, FaShieldAlt, FaBullhorn, FaUserShield,
-  FaChartLine, FaUserCircle, FaBook, FaUsers, FaCalendarAlt, 
-  FaFileAlt, FaBriefcase, FaHeadset, FaClipboardList
+  FaChevronDown, FaCog, FaShieldAlt, FaBullhorn,
+  FaBook, FaBriefcase, FaHeadset
 } from "react-icons/fa";
 import "./DashboardLayout.css";
 
@@ -15,12 +14,10 @@ function DashboardLayout() {
   const [activeDropdown, setActiveDropdown] = useState(null);
   const dropdownRef = useRef(null);
 
-  // Toggle dropdown on click
   const toggleDropdown = (name) => {
     setActiveDropdown(activeDropdown === name ? null : name);
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -59,8 +56,7 @@ function DashboardLayout() {
       <header className="main-dashboard-header">
         <div className="nav-container-inner" ref={dropdownRef}>
           
-          {/* 1. LEFT: LOGO */}
-          <Link to="/" className="logo-section-left" style={{ textDecoration: 'none' }}>
+          <Link to="/" className="logo-section-left">
             <div className="logo-icon-box"><FaGraduationCap /></div>
             <div className="logo-text-group">
               <h1 className="brand-name">EtMS</h1>
@@ -68,7 +64,6 @@ function DashboardLayout() {
             </div>
           </Link>
 
-          {/* 2. CENTER: NAVIGATION */}
           <nav className="header-nav-menu">
             <NavLink to={`/${rolePath}/dashboard`} className="nav-menu-link">📊 Dashboard</NavLink>
 
@@ -80,7 +75,7 @@ function DashboardLayout() {
                 </button>
                 {activeDropdown === 'super' && (
                   <div className="dropdown-content">
-                    <NavLink to="/superadmin/admins" onClick={() => setActiveDropdown(null)}>🛡️ Manage Admins</NavLink>
+                    <NavLink to="/superadmin/create-admin" onClick={() => setActiveDropdown(null)}>🛡️ Manage Admins</NavLink>
                     <NavLink to="/superadmin/marketers" onClick={() => setActiveDropdown(null)}>👨‍💼 Manage Marketers</NavLink>
                     <NavLink to="/superadmin/revenue" onClick={() => setActiveDropdown(null)}>💰 Revenue Reports</NavLink>
                     <NavLink to="/superadmin/settings" onClick={() => setActiveDropdown(null)}>⚙️ System Settings</NavLink>
@@ -91,19 +86,40 @@ function DashboardLayout() {
 
             {/* ADMIN */}
             {user?.role === "ADMIN" && (
-              <div className="nav-dropdown">
-                <button className={`nav-menu-link ${activeDropdown === 'admin' ? 'active-btn' : ''}`} onClick={() => toggleDropdown('admin')}>
-                  <FaCog /> System Ops <FaChevronDown className={`drop-icon ${activeDropdown === 'admin' ? 'rotate' : ''}`} />
-                </button>
-                {activeDropdown === 'admin' && (
-                  <div className="dropdown-content">
-                    <NavLink to="/admin/create-course" onClick={() => setActiveDropdown(null)}>➕ Create Course</NavLink>
-                    <NavLink to="/admin/courses" onClick={() => setActiveDropdown(null)}>📚 All Courses</NavLink>
-                    <NavLink to="/admin/assign-trainer" onClick={() => setActiveDropdown(null)}>👨‍🏫 Trainer Assignment</NavLink>
-                    <NavLink to="/admin/students" onClick={() => setActiveDropdown(null)}>👨‍🎓 Manage Students</NavLink>
-                  </div>
-                )}
-              </div>
+              <>
+                <div className="nav-dropdown">
+                  <button className={`nav-menu-link ${activeDropdown === 'admin' ? 'active-btn' : ''}`} onClick={() => toggleDropdown('admin')}>
+                    <FaCog /> System Ops <FaChevronDown className={`drop-icon ${activeDropdown === 'admin' ? 'rotate' : ''}`} />
+                  </button>
+                  {activeDropdown === 'admin' && (
+                    <div className="dropdown-content">
+                      <NavLink to="/admin/create-course" onClick={() => setActiveDropdown(null)}>➕ Create Course</NavLink>
+                      <NavLink to="/admin/courses" onClick={() => setActiveDropdown(null)}>📚 All Courses</NavLink>
+                      <NavLink to="/admin/create-batch" onClick={() => setActiveDropdown(null)}>🗂 Create Batch</NavLink>
+                      <NavLink to="/admin/assign-trainer" onClick={() => setActiveDropdown(null)}>👨‍🏫 Trainer Assignment</NavLink>
+                      <NavLink to="/admin/schedule-class" onClick={() => setActiveDropdown(null)}>⏰ Schedule Class</NavLink>
+                      <NavLink to="/admin/students" onClick={() => setActiveDropdown(null)}>👨‍🎓 Manage Students</NavLink>
+                      <NavLink to="/admin/attendance" onClick={() => setActiveDropdown(null)}>🗓 Attendance</NavLink>
+                    </div>
+                  )}
+                </div>
+
+                <div className="nav-dropdown">
+                  <button className={`nav-menu-link ${activeDropdown === 'admin-career' ? 'active-btn' : ''}`} onClick={() => toggleDropdown('admin-career')}>
+                    <FaBriefcase /> Career Hub <FaChevronDown className={`drop-icon ${activeDropdown === 'admin-career' ? 'rotate' : ''}`} />
+                  </button>
+                  {activeDropdown === 'admin-career' && (
+                    <div className="dropdown-content">
+                      <NavLink to="/admin/post-job" onClick={() => setActiveDropdown(null)}>💼 Post New Job</NavLink>
+                      <NavLink to="/admin/manage-jobs" onClick={() => setActiveDropdown(null)}>📝 Manage Listings</NavLink>
+                      <NavLink to="/admin/post-internship" onClick={() => setActiveDropdown(null)}>🎓 Post Internship</NavLink>
+                      <NavLink to="/admin/job-applications" onClick={() => setActiveDropdown(null)}>📥 View Applications</NavLink>
+                      <NavLink to="/admin/company-partners" onClick={() => setActiveDropdown(null)}>🏢 Industry Partners</NavLink>
+                      <NavLink to="/admin/placement-stats" onClick={() => setActiveDropdown(null)}>📈 Placement Reports</NavLink>
+                    </div>
+                  )}
+                </div>
+              </>
             )}
 
             {/* TRAINER */}
@@ -139,22 +155,6 @@ function DashboardLayout() {
               </div>
             )}
 
-            {/* COUNSELOR */}
-            {user?.role === "COUNSELOR" && (
-              <div className="nav-dropdown">
-                <button className={`nav-menu-link ${activeDropdown === 'counseling' ? 'active-btn' : ''}`} onClick={() => toggleDropdown('counseling')}>
-                  <FaHeadset /> Counseling <FaChevronDown className={`drop-icon ${activeDropdown === 'counseling' ? 'rotate' : ''}`} />
-                </button>
-                {activeDropdown === 'counseling' && (
-                  <div className="dropdown-content">
-                    <NavLink to="/counselor/enquiries" onClick={() => setActiveDropdown(null)}>📞 New Enquiries</NavLink>
-                    <NavLink to="/counselor/follow-ups" onClick={() => setActiveDropdown(null)}>⏳ Follow-ups</NavLink>
-                    <NavLink to="/counselor/admissions" onClick={() => setActiveDropdown(null)}>✅ Admissions</NavLink>
-                  </div>
-                )}
-              </div>
-            )}
-
             {/* STUDENT */}
             {user?.role === "STUDENT" && (
               <>
@@ -165,15 +165,12 @@ function DashboardLayout() {
                   {activeDropdown === 'st-learn' && (
                     <div className="dropdown-content">
                       <NavLink to="/student/courses" onClick={() => setActiveDropdown(null)}>📚 My Courses</NavLink>
-                      <NavLink to="/student/attendance" onClick={() => setActiveDropdown(null)}>� Attendance</NavLink>
+                      <NavLink to="/student/attendance" onClick={() => setActiveDropdown(null)}>🗓 Attendance</NavLink>
                       <NavLink to="/student/assignments" onClick={() => setActiveDropdown(null)}>📝 Assignments</NavLink>
                       <NavLink to="/student/results" onClick={() => setActiveDropdown(null)}>📊 Results</NavLink>
-                      <NavLink to="/student/materials" onClick={() => setActiveDropdown(null)}>📂 Study Materials</NavLink>
-                      <NavLink to="/student/certificates" onClick={() => setActiveDropdown(null)}>🏆 Certificates</NavLink>
                     </div>
                   )}
                 </div>
-
                 <div className="nav-dropdown">
                   <button className={`nav-menu-link ${activeDropdown === 'st-hiring' ? 'active-btn' : ''}`} onClick={() => toggleDropdown('st-hiring')}>
                     <FaBriefcase /> Hiring <FaChevronDown className={`drop-icon ${activeDropdown === 'st-hiring' ? 'rotate' : ''}`} />
@@ -182,7 +179,6 @@ function DashboardLayout() {
                     <div className="dropdown-content">
                       <NavLink to="/student/jobs" onClick={() => setActiveDropdown(null)}>🏢 Jobs</NavLink>
                       <NavLink to="/student/internships" onClick={() => setActiveDropdown(null)}>🎓 Internships</NavLink>
-                      <NavLink to="/student/interview-prep" onClick={() => setActiveDropdown(null)}>❓ Interview Prep</NavLink>
                     </div>
                   )}
                 </div>
@@ -193,7 +189,6 @@ function DashboardLayout() {
             <NavLink to={`/${rolePath}/profile`} className="nav-menu-link">👤 Profile</NavLink>
           </nav>
 
-          {/* 3. RIGHT: USER ACTIONS */}
           <div className="user-actions-right">
             <div className="user-role-badge">
               <span className="role-text-label">{user?.role?.replace("_", " ")}</span>
@@ -206,7 +201,6 @@ function DashboardLayout() {
         </div>
       </header>
 
-      {/* ===== MAIN CONTENT ===== */}
       <main className="dashboard-view-content">
         <div className="nav-container-inner">
           <div className="content-fluid-wrapper">
