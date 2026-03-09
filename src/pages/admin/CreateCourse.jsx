@@ -1,15 +1,13 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../../api/axiosConfig"; 
+import { FaEdit, FaTrashAlt, FaRedo, FaSearch, FaCheckCircle, FaDownload, FaFileUpload } from "react-icons/fa";
 import "./CreateCourse.css";
 
-const API_BASE = "http://localhost:8080/api/admin";
-
 function CreateCourse() {
-
   const [courseName, setCourseName] = useState("");
   const [duration, setDuration] = useState("");
   const [description, setDescription] = useState("");
-  const [file, setFile] = useState(null); // ✅ NEW
+  const [file, setFile] = useState(null);
 
   const [courses, setCourses] = useState([]);
   const [inactiveCourses, setInactiveCourses] = useState([]);
@@ -22,25 +20,19 @@ function CreateCourse() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const token = localStorage.getItem("token");
-
   useEffect(() => {
     fetchCourses();
   }, []);
 
   const fetchCourses = async () => {
     try {
-      const activeRes = await axios.get(`${API_BASE}/courses`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      const inactiveRes = await axios.get(`${API_BASE}/courses/inactive`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
+      const [activeRes, inactiveRes] = await Promise.all([
+        api.get("/admin/courses"),
+        api.get("/admin/courses/inactive")
+      ]);
       setCourses(activeRes.data);
       setInactiveCourses(inactiveRes.data);
-    } catch {
+    } catch (err) {
       setError("Failed to load courses.");
     }
   };
@@ -49,61 +41,39 @@ function CreateCourse() {
     setCourseName("");
     setDuration("");
     setDescription("");
-    setFile(null); // ✅ reset file
+    setFile(null);
     setEditingId(null);
     setError("");
+    const fileInput = document.getElementById("syllabus-file");
+    if (fileInput) fileInput.value = "";
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setMessage("");
-
     if (!courseName || !duration || description.length < 10) {
       return setError("Please fill all fields correctly.");
     }
 
     try {
       setLoading(true);
-
-      // ✅ Use FormData instead of JSON
       const formData = new FormData();
       formData.append("courseName", courseName);
       formData.append("duration", duration);
       formData.append("description", description);
-
-      if (file) {
-        formData.append("file", file);
-      }
+      if (file) formData.append("file", file);
 
       if (editingId) {
-        await axios.put(`${API_BASE}/courses/${editingId}`, formData, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data"
-          }
-        });
+        await api.put(`/admin/courses/${editingId}`, formData);
         setMessage("Course updated successfully!");
       } else {
-        await axios.post(`${API_BASE}/course`, formData, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data"
-          }
-        });
+        await api.post("/admin/course", formData);
         setMessage("Course created successfully!");
       }
-
       resetForm();
       fetchCourses();
       setTimeout(() => setMessage(""), 3000);
-
     } catch (err) {
-      setError(
-        typeof err.response?.data === "string"
-          ? err.response.data
-          : err.response?.data?.message || "Operation failed."
-      );
+      setError("Operation failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -117,200 +87,120 @@ function CreateCourse() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Mark this course as inactive?")) return;
-    try {
-      await axios.delete(`${API_BASE}/courses/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setMessage("Course marked as Inactive.");
-      fetchCourses();
-    } catch {
-      setError("Failed to delete course.");
-    }
-  };
-
-  const handleReactivate = async (id) => {
-    try {
-      await axios.put(`${API_BASE}/courses/reactivate/${id}`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setMessage("Course reactivated successfully.");
-      fetchCourses();
-    } catch {
-      setError("Failed to reactivate course.");
-    }
-  };
-
-  const displayedCourses =
-    viewMode === "ACTIVE" ? courses : inactiveCourses;
-
-  const filteredCourses = displayedCourses.filter((course) =>
-    course.courseName?.toLowerCase().includes(searchTerm.toLowerCase())
+  const displayedCourses = viewMode === "ACTIVE" ? courses : inactiveCourses;
+  const filteredCourses = displayedCourses.filter((c) =>
+    c.courseName?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <div className="assign-layout">
+    <div className="etms-container">
+      <div className="etms-layout">
+        
+        {/* LEFT: FORM CARD */}
+        <div className="etms-card form-card">
+          <h2 className="etms-title">{editingId ? "Edit Course" : "Create Course"}</h2>
+          
+          {message && <p className="msg-success"><FaCheckCircle /> {message}</p>}
+          {error && <p className="msg-error">{error}</p>}
 
-      {/* LEFT FORM */}
-      <div className="assign-form">
-        <h2>{editingId ? "Edit Course" : "Create New Course"}</h2>
-
-        {message && <p className="success-message">{message}</p>}
-        {error && <p className="error-message">{error}</p>}
-
-        <div className="form-group">
-          <label>Course Name</label>
-          <input
-            type="text"
-            value={courseName}
-            onChange={(e) => setCourseName(e.target.value)}
-            placeholder="Enter course name"
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Duration</label>
-          <select value={duration} onChange={(e) => setDuration(e.target.value)}>
-            <option value="">-- Select Duration --</option>
-            <option>1 Month</option>
-            <option>3 Months</option>
-            <option>6 Months</option>
-            <option>1 Year</option>
-          </select>
-        </div>
-
-        <div className="form-group">
-          <label>Description</label>
-          <textarea
-            rows="5"
-            maxLength="500"   // ✅ Increased to 500
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Enter course description..."
-          />
-          <small>{description.length}/500 characters</small>
-        </div>
-
-        {/* ✅ NEW FILE UPLOAD */}
-        <div className="form-group">
-          <label>Upload Syllabus (PDF / DOC / DOCX)</label>
-          <input
-            type="file"
-            accept=".pdf,.doc,.docx"
-            onChange={(e) => setFile(e.target.files[0])}
-          />
-        </div>
-
-        <button
-          className="assign-btn"
-          onClick={handleSubmit}
-          disabled={loading}
-        >
-          {loading
-            ? "Saving..."
-            : editingId
-            ? "Update Course"
-            : "Create Course"}
-        </button>
-
-        {editingId && (
-          <button className="cancel-btn" onClick={resetForm}>
-            Cancel
-          </button>
-        )}
-      </div>
-
-      {/* RIGHT LIST */}
-      <div className="assign-list">
-
-        <div className="list-header">
-          <h3>Course Management</h3>
-
-          <div className="toggle-buttons">
-            <button
-              className={viewMode === "ACTIVE" ? "active-tab" : ""}
-              onClick={() => setViewMode("ACTIVE")}
-            >
-              Active
-            </button>
-            <button
-              className={viewMode === "INACTIVE" ? "active-tab" : ""}
-              onClick={() => setViewMode("INACTIVE")}
-            >
-              Inactive
-            </button>
-          </div>
-        </div>
-
-        <div className="search-box">
-          <input
-            type="text"
-            placeholder="Search course..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-
-        <div className="scroll-area">
-          {filteredCourses.map((course) => (
-            <div key={course.id} className="course-block">
-              <h4>{course.courseName}</h4>
-              <p><strong>Duration:</strong> {course.duration}</p>
-              <p>{course.description}</p>
-
-              {course.syllabusFileName && (
-  <div className="syllabus-section">
-    <div className="syllabus-info">
-      <span className="syllabus-label">Syllabus:</span>
-      <span className="syllabus-name">
-        {course.syllabusFileName}
-      </span>
-    </div>
-
-    <button
-      className="download-btn"
-      onClick={() =>
-        window.open(
-          `${API_BASE}/courses/download/${course.id}`,
-          "_blank"
-        )
-      }
-    >
-      ⬇ Download
-    </button>
-  </div>
-)}
-
-              <div className="action-icons">
-                {viewMode === "ACTIVE" && (
-                  <>
-                    <button
-                      className="edit-icon"
-                      onClick={() => handleEdit(course)}
-                    >
-                      ✏️
-                    </button>
-                    <button
-                      className="delete-icon"
-                      onClick={() => handleDelete(course.id)}
-                    >
-                      🗑️
-                    </button>
-                  </>
-                )}
-
-                {viewMode === "INACTIVE" && (
-                  <button
-                    className="reactivate-btn"
-                    onClick={() => handleReactivate(course.id)}
-                  >
-                    🔄
-                  </button>
-                )}
-              </div>
+          <form onSubmit={handleSubmit} className="etms-form">
+            <div className="etms-group">
+              <label>Course Name</label>
+              <input 
+                type="text" 
+                value={courseName} 
+                onChange={(e) => setCourseName(e.target.value)}
+                placeholder="Enter course name"
+              />
             </div>
-          ))}
+
+            <div className="etms-group">
+              <label>Duration</label>
+              <select value={duration} onChange={(e) => setDuration(e.target.value)}>
+                <option value="">Select Duration</option>
+                <option>1 Month</option>
+                <option>3 Months</option>
+                <option>6 Months</option>
+                <option>1 Year</option>
+              </select>
+            </div>
+
+            <div className="etms-group">
+              <label>Description</label>
+              <textarea 
+                rows="5" 
+                value={description} 
+                onChange={(e) => setDescription(e.target.value)}
+              />
+              <span className="char-count">{description.length}/500 characters</span>
+            </div>
+
+            <div className="etms-group">
+              <label>Upload Syllabus (PDF / DOC / DOCX)</label>
+              <input 
+                id="syllabus-file"
+                type="file" 
+                onChange={(e) => setFile(e.target.files[0])} 
+              />
+            </div>
+
+            <div className="btn-row">
+              <button type="submit" className="btn-primary" disabled={loading}>
+                {loading ? "Saving..." : editingId ? "Update Course" : "Create Course"}
+              </button>
+              {editingId && <button type="button" className="btn-cancel" onClick={resetForm}>Cancel</button>}
+            </div>
+          </form>
+        </div>
+
+        {/* RIGHT: LIST CARD */}
+        <div className="etms-card list-card">
+          <div className="list-header">
+            <h3>Course Management</h3>
+            <div className="toggle-box">
+              <button className={viewMode === "ACTIVE" ? "active" : ""} onClick={() => setViewMode("ACTIVE")}>Active</button>
+              <button className={viewMode === "INACTIVE" ? "active" : ""} onClick={() => setViewMode("INACTIVE")}>Inactive</button>
+            </div>
+          </div>
+
+          <div className="search-box">
+            <div className="search-input-wrapper">
+              <FaSearch className="search-icon" />
+              <input 
+                type="text" 
+                placeholder="Search course..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="course-scroll">
+            {filteredCourses.map((course) => (
+              <div key={course.id} className="course-row">
+                <div className="row-content">
+                  <h4>{course.courseName}</h4>
+                  <p className="row-meta"><strong>Duration:</strong> {course.duration}</p>
+                  <p className="row-desc">{course.description}</p>
+                  {course.syllabusFileName && (
+                    <span className="dl-text" onClick={() => window.open(`${api.defaults.baseURL}/admin/courses/download/${course.id}`)}>
+                      <FaDownload size={12} /> {course.syllabusFileName}
+                    </span>
+                  )}
+                </div>
+                <div className="row-btns">
+                  {viewMode === "ACTIVE" ? (
+                    <>
+                      <button className="icon-edit" onClick={() => handleEdit(course)}><FaEdit /></button>
+                      <button className="icon-delete" onClick={() => api.delete(`/admin/courses/${course.id}`).then(fetchCourses)}><FaTrashAlt /></button>
+                    </>
+                  ) : (
+                    <button className="icon-restore" onClick={() => api.put(`/admin/courses/reactivate/${course.id}`).then(fetchCourses)}><FaRedo /></button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
       </div>
