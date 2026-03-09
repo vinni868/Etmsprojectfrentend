@@ -1,17 +1,22 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { 
-  FaUserCheck, FaUserTimes, FaUserClock, 
-  FaSave, FaSearch, FaBookReader, FaChartLine, FaFilter, FaUsers, FaFilePdf, FaCalendarAlt, FaHistory, FaEdit
+import api from "../../api/axiosConfig";
+import {
+  FaUserCheck, FaUserTimes, FaUserClock,
+  FaSave, FaSearch, FaBookReader, FaChartLine,
+  FaFilter, FaUsers, FaFilePdf, FaCalendarAlt,
+  FaHistory, FaEdit
 } from "react-icons/fa";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import "./TrainerAttendance.css";
 
 function TrainerAttendance() {
+
   const user = JSON.parse(localStorage.getItem("user"));
   const trainerId = user?.id || 3;
-  const trainerName = user?.name || "Rajesh Kumar"; 
+  const trainerName = user?.name || "Rajesh Kumar";
+
+  const today = new Date().toISOString().split("T")[0];   // ✅ today date
 
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState("");
@@ -20,11 +25,12 @@ function TrainerAttendance() {
   const [students, setStudents] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [topicTaught, setTopicTaught] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  
+  const [date, setDate] = useState(today);  // ✅ default today
+
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-  const [viewMode, setViewMode] = useState("MARK"); // "MARK" or "HISTORY"
+
+  const [viewMode, setViewMode] = useState("MARK");
   const [attendanceHistory, setAttendanceHistory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -41,73 +47,106 @@ function TrainerAttendance() {
 
   const fetchCourses = async () => {
     try {
-      const res = await axios.get(`http://localhost:8080/api/teacher/courses/${trainerId}`);
+      const res = await api.get(`/teacher/courses/${trainerId}`);
       setCourses(res.data);
-    } catch (err) { console.error("Course fetch failed", err); }
+    } catch (err) {
+      console.error("Course fetch failed", err);
+    }
   };
 
   const checkExistingAttendance = async () => {
+
     setLoading(true);
+
     try {
-      const res = await axios.get(`http://localhost:8080/api/teacher/attendance/check?batchId=${selectedBatch}&date=${date}`);
-      
+
+      const res = await api.get(`/teacher/attendance/check?batchId=${selectedBatch}&date=${date}`);
+
       if (res.data && res.data.length > 0) {
+
         setStudents(res.data.map(item => ({
-          id: item.studentId, 
+          id: item.studentId,
           name: item.studentName || "Student",
-          email: item.email || item.studentEmail || item.userEmail || "N/A", 
+          email: item.email || item.studentEmail || item.userEmail || "N/A",
           status: item.status,
-          attendanceId: item.id 
+          attendanceId: item.id
         })));
+
         setTopicTaught(res.data[0].topic || "");
         setIsEditMode(true);
+
       } else {
+
         setIsEditMode(false);
         setTopicTaught("");
-        const freshRes = await axios.get(`http://localhost:8080/api/teacher/batches/${selectedBatch}/students`);
-        setStudents(freshRes.data.map(s => ({ 
-          ...s, 
+
+        const freshRes = await api.get(`/teacher/batches/${selectedBatch}/students`);
+
+        setStudents(freshRes.data.map(s => ({
+          ...s,
           email: s.email || s.studentEmail || s.userEmail || "N/A",
-          status: "PRESENT", 
-          attendanceId: null 
+          status: "PRESENT",
+          attendanceId: null
         })));
+
       }
+
     } catch (err) {
       console.error("Check failed", err);
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
+
   };
 
   const handleCourseChange = async (courseId) => {
+
     setSelectedCourse(courseId);
     setSelectedBatch("");
     setStudents([]);
     setAttendanceHistory([]);
+
     if (!courseId) return;
+
     try {
-      const res = await axios.get(`http://localhost:8080/api/teacher/courses/${trainerId}/${courseId}/batches`);
+
+      const res = await api.get(`/teacher/courses/${trainerId}/${courseId}/batches`);
       setBatches(res.data);
-    } catch (err) { console.error("Batch fetch failed", err); }
+
+    } catch (err) {
+      console.error("Batch fetch failed", err);
+    }
+
   };
 
   const handleBatchChange = async (batchId) => {
     setSelectedBatch(batchId);
-    if (!batchId) { setStudents([]); return; }
+    if (!batchId) setStudents([]);
   };
 
   const fetchAttendanceHistory = async () => {
+
     if (!selectedBatch || !fromDate || !toDate) {
-      alert("Please select a batch and a valid date range.");
+      alert("Please select batch and valid date range");
       return;
     }
+
     setLoading(true);
+
     try {
-      const res = await axios.get(`http://localhost:8080/api/teacher/attendance/history/${selectedBatch}?from=${fromDate}&to=${toDate}`);
+
+      const res = await api.get(`/teacher/attendance/history/${selectedBatch}?from=${fromDate}&to=${toDate}`);
+
       setAttendanceHistory(res.data);
       setViewMode("HISTORY");
-    } catch (err) { 
+
+    } catch (err) {
       console.error("History fetch failed", err);
-      alert("Could not fetch history.");
-    } finally { setLoading(false); }
+      alert("Could not fetch history");
+    } finally {
+      setLoading(false);
+    }
+
   };
 
   const handleStatusChange = (id, newStatus) => {
@@ -119,91 +158,124 @@ function TrainerAttendance() {
   };
 
   const downloadPDF = () => {
+
     const dataToExport = viewMode === "MARK" ? filteredStudents : attendanceHistory;
-    if (dataToExport.length === 0) return alert("No data available to export.");
+
+    if (dataToExport.length === 0) {
+      alert("No data available");
+      return;
+    }
 
     const doc = new jsPDF();
-    const tableColumn = viewMode === "MARK" 
-      ? ["ID", "Student Name", "Email Address", "Status"]
-      : ["Date", "Student Name", "Status", "Topic"];
-      
+
+    const tableColumn = viewMode === "MARK"
+      ? ["ID", "Student Name", "Email", "Status"]
+      : ["Date", "Student", "Status", "Topic"];
+
     const tableRows = viewMode === "MARK"
       ? dataToExport.map(s => [s.id, s.name, s.email, s.status])
       : dataToExport.map(h => [h.attendanceDate, h.studentName, h.status, h.topic]);
 
     doc.setFontSize(20);
-    doc.setTextColor(93, 95, 239);
-    doc.text(viewMode === "MARK" ? "Daily Attendance Report" : "Attendance History Report", 14, 20);
-    
-    doc.setFontSize(10);
-    doc.setTextColor(40);
-    doc.text(`Trainer: ${trainerName}`, 14, 30);
-    doc.text(`Batch: ${batches.find(b => b.batchId == selectedBatch)?.batchName || "N/A"}`, 14, 35);
-    if(viewMode === "HISTORY") doc.text(`Range: ${fromDate} to ${toDate}`, 14, 40);
+    doc.text("Attendance Report", 14, 20);
 
     doc.autoTable({
       head: [tableColumn],
       body: tableRows,
-      startY: 45,
-      theme: 'grid',
-      headStyles: { fillColor: [93, 95, 239] }
+      startY: 30
     });
+
     doc.save(`Attendance_Report_${selectedBatch}.pdf`);
+
   };
 
   const handleSave = async () => {
-    if (!selectedBatch || !topicTaught.trim()) {
-      alert("Please select a batch and enter the Lesson Objective.");
+
+    // ✅ FUTURE DATE VALIDATION
+    if (date > today) {
+      alert("Future dates are not allowed for attendance.");
       return;
     }
+
+    if (!selectedBatch || !topicTaught.trim()) {
+      alert("Select batch and enter topic.");
+      return;
+    }
+
     const payload = students.map(s => ({
-      id: s.attendanceId, 
-      studentId: s.id, 
-      batchId: selectedBatch, 
-      attendanceDate: date, 
-      status: s.status, 
+      id: s.attendanceId,
+      studentId: s.id,
+      batchId: selectedBatch,
+      attendanceDate: date,
+      status: s.status,
       topic: topicTaught
     }));
+
     try {
-      await axios.post("http://localhost:8080/api/teacher/attendance/bulk", payload);
-      alert(isEditMode ? "Attendance Updated Successfully! 📝" : "Attendance Saved Successfully! ✅");
-      checkExistingAttendance(); 
-    } catch (err) { alert("Save failed."); }
+
+      await api.post("/teacher/attendance/bulk", payload);
+
+      alert(isEditMode ? "Attendance Updated 📝" : "Attendance Saved ");
+
+      checkExistingAttendance();
+
+    } catch (err) {
+      alert("Save failed");
+    }
+
   };
 
-  const filteredStudents = students.filter(s => s.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredStudents = students.filter(s =>
+    s.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="attendance-page-wrapper">
+
       <div className="attendance-container">
-        
-        {/* Header Section */}
+
         <header className="attendance-header-main">
+
           <div className="header-left">
             <h1 className="page-title">Attendance Management</h1>
+
             <div className="trainer-info-tags">
-              <span className="info-pill gray">ID: {trainerId}</span>
               <span className="info-pill blue">Trainer: {trainerName}</span>
               {isEditMode && viewMode === "MARK" && (
                 <span className="info-pill orange-badge">Edit Mode</span>
               )}
             </div>
+
           </div>
+
           <div className="header-right">
+
             {viewMode === "MARK" && (
               <div className="date-display-box">
-                <FaCalendarAlt className="icon-muted" />
-                <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+
+                <FaCalendarAlt />
+
+                {/* ✅ FUTURE DATE BLOCKED */}
+                <input
+                  type="date"
+                  value={date}
+                  max={today}
+                  onChange={(e) => setDate(e.target.value)}
+                />
+
               </div>
             )}
-            <button 
-              className={`save-session-btn ${isEditMode ? 'update' : ''}`} 
-              onClick={handleSave} 
+
+            <button
+              className={`save-session-btn ${isEditMode ? 'update' : ''}`}
+              onClick={handleSave}
               disabled={viewMode === "HISTORY" || !selectedBatch}
             >
               <FaSave /> {isEditMode ? "Update Session" : "Save Session"}
             </button>
+
           </div>
+
         </header>
 
         {/* Action Strips */}
@@ -246,7 +318,7 @@ function TrainerAttendance() {
               
               <div className="form-item">
                 <div className="search-wrapper-mini">
-                  <FaSearch className="search-icon" />
+                 
                   <input type="text" placeholder="Find student..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                 </div>
               </div>
@@ -285,9 +357,7 @@ function TrainerAttendance() {
 
               <div className="sidebar-divider-line" />
               
-              <button className="download-pdf-btn" onClick={downloadPDF}>
-                 <FaFilePdf /> Export Report
-              </button>
+              
             </div>
           </aside>
 
@@ -327,7 +397,7 @@ function TrainerAttendance() {
                             <div className="avatar-circle-v2">{student.name ? student.name.charAt(0) : "S"}</div>
                             <div className="student-details">
                                <span className="student-name-v2">{student.name}</span>
-                               <span className="student-id-sub">ID: #{student.id}</span>
+                              
                             </div>
                           </div>
                         </td>

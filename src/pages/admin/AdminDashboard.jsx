@@ -2,15 +2,20 @@ import {
   FaBook,
   FaChalkboardTeacher,
   FaUsers,
-  FaBell
+  FaBell,
+  FaSearch,
+  FaLayerGroup,
+  FaChevronLeft,
+  FaChevronRight
 } from "react-icons/fa";
 import { useEffect, useState, useRef } from "react";
-import axios from "axios";
+import api from "../../api/axiosConfig";
+//import api from "../../api/api";
+import Footer from "../../components/Footer";
 import "./AdminDashboard.css";
 
 function AdminDashboard() {
   const user = JSON.parse(localStorage.getItem("user"));
-
   const [data, setData] = useState({
     totalCourses: 0,
     totalTrainers: 0,
@@ -19,296 +24,243 @@ function AdminDashboard() {
   });
 
   const [users, setUsers] = useState([]);
+  const [search, setSearch] = useState("");
   const [pendingCount, setPendingCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
-
   const notificationRef = useRef(null);
-  const API = "http://localhost:8080/api/admin";
 
-  // ================= INITIAL LOAD =================
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 10;
+
   useEffect(() => {
     fetchDashboardData();
     fetchAllUsers();
   }, []);
 
-  // ================= FETCH DASHBOARD =================
   const fetchDashboardData = async () => {
     try {
-      const response = await axios.get(`${API}/dashboard`);
-      setData(response.data);
-    } catch (error) {
-      console.error("Dashboard fetch error:", error);
+      const res = await api.get("/admin/dashboard");
+      setData(res.data);
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  // ================= SORT USERS (PENDING FIRST) =================
-  const sortUsersByStatus = (userList) => {
-    const statusPriority = {
-      PENDING: 1,
-      ACTIVE: 2,
-      REJECTED: 3
-    };
-
-    return [...userList].sort(
-      (a, b) =>
-        statusPriority[a.status] - statusPriority[b.status]
-    );
-  };
-
-  // ================= FETCH ALL USERS =================
   const fetchAllUsers = async () => {
     try {
-      const res = await axios.get(`${API}/all-users`);
-      const allUsers = res.data;
-
-      const sortedUsers = sortUsersByStatus(allUsers);
-      setUsers(sortedUsers);
-
-      recalculateCounts(sortedUsers);
-
+      const res = await api.get("/admin/all-users");
+      setUsers(res.data);
+      const pending = res.data.filter(u => u.status === "PENDING").length;
+      setPendingCount(pending);
     } catch (err) {
-      console.error("Users fetch error", err);
+      console.error(err);
     }
   };
 
-  // ================= APPROVE USER =================
   const approveUser = async (id) => {
-    try {
-      await axios.put(`${API}/approve-user/${id}`);
-
-      const updatedUsers = users.map(u =>
-        u.id === id ? { ...u, status: "ACTIVE" } : u
-      );
-
-      const sortedUsers = sortUsersByStatus(updatedUsers);
-      setUsers(sortedUsers);
-
-      recalculateCounts(sortedUsers);
-
-    } catch (err) {
-      console.error("Approve error", err);
-    }
+    await api.put(`/admin/approve-user/${id}`);
+    fetchAllUsers();
   };
 
-  // ================= REJECT USER =================
   const rejectUser = async (id) => {
-    try {
-      await axios.put(`${API}/reject-user/${id}`);
-
-      const updatedUsers = users.map(u =>
-        u.id === id ? { ...u, status: "REJECTED" } : u
-      );
-
-      const sortedUsers = sortUsersByStatus(updatedUsers);
-      setUsers(sortedUsers);
-
-      recalculateCounts(sortedUsers);
-
-    } catch (err) {
-      console.error("Reject error", err);
-    }
+    await api.put(`/admin/reject-user/${id}`);
+    fetchAllUsers();
   };
 
-  // ================= RECALCULATE COUNTS =================
-  const recalculateCounts = (allUsers) => {
-    const activeStudents = allUsers.filter(
-      u => u.status === "ACTIVE" && u.role?.roleName === "STUDENT"
-    ).length;
-
-    const activeTrainers = allUsers.filter(
-      u => u.status === "ACTIVE" && u.role?.roleName === "TRAINER"
-    ).length;
-
-    const pending = allUsers.filter(
-      u => u.status === "PENDING"
-    ).length;
-
-    setData(prev => ({
-      ...prev,
-      totalStudents: activeStudents,
-      totalTrainers: activeTrainers
-    }));
-
-    setPendingCount(pending);
+  const deactivateUser = async (id) => {
+    await api.put(`/admin/deactivate-user/${id}`);
+    fetchAllUsers();
   };
 
-  // ================= NOTIFICATION TOGGLE =================
-  const toggleNotifications = () => {
-    setShowNotifications(!showNotifications);
+  const reactivateUser = async (id) => {
+    await api.put(`/admin/approve-user/${id}`);
+    fetchAllUsers();
   };
 
-  // ================= CLOSE DROPDOWN =================
+  const toggleNotifications = () => setShowNotifications(!showNotifications);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (
-        notificationRef.current &&
-        !notificationRef.current.contains(event.target)
-      ) {
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
         setShowNotifications(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Filter & Pagination Logic + PENDING CANDIDATES FIRST SORT
+  const filteredUsers = users
+    .filter((u) => {
+      const text = search.toLowerCase();
+      return (
+        u.name?.toLowerCase().includes(text) ||
+        u.email?.toLowerCase().includes(text) ||
+        u.phone?.toLowerCase().includes(text)
+      );
+    })
+    .sort((a, b) => {
+      // Logic: If 'a' is PENDING and 'b' is not, 'a' comes first (-1)
+      if (a.status === "PENDING" && b.status !== "PENDING") return -1;
+      if (a.status !== "PENDING" && b.status === "PENDING") return 1;
+      return 0; // Otherwise keep original order
+    });
+
+  const indexOfLastRecord = currentPage * recordsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+  const currentRecords = filteredUsers.slice(indexOfFirstRecord, indexOfLastRecord);
+  const nPages = Math.ceil(filteredUsers.length / recordsPerPage);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
 
   return (
     <div className="admin-dashboard-wrapper">
-
-      {/* ================= HEADER ================= */}
-      <div className="top-header-card">
-        <div>
-          <h1>Admin Dashboard</h1>
-          <span>Welcome, {user?.name || "Admin"}</span>
+      {/* HEADER */}
+      <div className="dashboard-header">
+        <div className="header-left">
+          <h1>Admin Portal</h1>
+          <p>Welcome, <span className="admin-name">{user?.name || "Administrator"}</span></p>
         </div>
 
-        <div
-          ref={notificationRef}
-          style={{ position: "relative", cursor: "pointer" }}
-        >
-          <FaBell size={22} onClick={toggleNotifications} />
-
-          {pendingCount > 0 && (
-            <span style={{
-              position: "absolute",
-              top: "-5px",
-              right: "-8px",
-              background: "red",
-              color: "white",
-              borderRadius: "50%",
-              padding: "2px 6px",
-              fontSize: "12px"
-            }}>
-              {pendingCount}
-            </span>
-          )}
+        <div className="header-right" ref={notificationRef}>
+          <div className="notification-trigger" onClick={toggleNotifications}>
+            <FaBell className="bell-icon" />
+            {pendingCount > 0 && (
+              <span className="notification-badge">{pendingCount}</span>
+            )}
+          </div>
 
           {showNotifications && (
-            <div style={{
-              position: "absolute",
-              top: "35px",
-              right: "0",
-              width: "300px",
-              background: "#fff",
-              padding: "10px",
-              boxShadow: "0 4px 10px rgba(0,0,0,0.15)",
-              borderRadius: "8px"
-            }}>
-              {users
-                .filter(u => u.status === "PENDING")
-                .map(u => (
-                  <div key={u.id} style={{ marginBottom: "8px" }}>
-                    <span>
-                      <strong>{u.name}</strong> registered as{" "}
-                      <strong>{u.role?.roleName}</strong>, waiting for approval
-                    </span>
-                  </div>
-                ))
-              }
+            <div className="notification-dropdown">
+              <div className="dropdown-arrow"></div>
+              <div className="dropdown-header">Pending Approvals</div>
+              <div className="dropdown-body">
+                {users.filter(u => u.status === "PENDING").length > 0 ? (
+                  users.filter(u => u.status === "PENDING").map(u => (
+                    <div key={u.id} className="dropdown-item">
+                      <strong>{u.name}</strong>
+                      <span>Role: {u.role?.roleName}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="dropdown-empty">No pending requests</div>
+                )}
+              </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* ================= STATS ================= */}
+      {/* STATS GRID */}
       <div className="stats-grid">
-        <div className="stat-card">
-          <FaBook />
-          <div>Total Courses</div>
-          <h2>{data.totalCourses}</h2>
-        </div>
-
-        <div className="stat-card">
-          <FaChalkboardTeacher />
-          <div>Total Trainers</div>
-          <h2>{data.totalTrainers}</h2>
-        </div>
-
-        <div className="stat-card">
-          <FaUsers />
-          <div>Total Students</div>
-          <h2>{data.totalStudents}</h2>
-        </div>
-
-        <div className="stat-card">
-          <FaUsers />
-          <div>Active Batches</div>
-          <h2>{data.activeBatches}</h2>
-        </div>
+        {[
+          { label: "Total Courses", val: data.totalCourses, icon: <FaBook /> },
+          { label: "Total Trainers", val: data.totalTrainers, icon: <FaChalkboardTeacher /> },
+          { label: "Total Students", val: data.totalStudents, icon: <FaUsers /> },
+          { label: "Active Batches", val: data.activeBatches, icon: <FaLayerGroup /> }
+        ].map((item, idx) => (
+          <div className="stat-card" key={idx}>
+            <div className="stat-icon-container">{item.icon}</div>
+            <div className="stat-text">
+              <p>{item.label}</p>
+              <h2>{item.val}</h2>
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* ================= USERS TABLE ================= */}
-      <div className="user-approvals-section">
-        <div className="user-approvals-card">
-          <h2>User Approvals</h2>
+      {/* USER MANAGEMENT SECTION */}
+      <div className="user-management-section">
+        <div className="section-header">
+          <div className="title-group">
+            <h2>User Management</h2>
+            <div className="search-bar">
+              <FaSearch />
+              <input 
+                type="text" 
+                placeholder="Search candidates..." 
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+          </div>
 
-          <div className="user-table-wrapper">
-            <table className="user-table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
+          {/* PAGINATION ON TOP */}
+          {nPages > 1 && (
+            <div className="top-pagination">
+              <span className="page-info">Page {currentPage} of {nPages}</span>
+              <div className="page-controls">
+                <button 
+                  disabled={currentPage === 1} 
+                  onClick={() => setCurrentPage(prev => prev - 1)}
+                  className="ctrl-btn"
+                ><FaChevronLeft /></button>
+                <button 
+                  disabled={currentPage === nPages} 
+                  onClick={() => setCurrentPage(prev => prev + 1)}
+                  className="ctrl-btn"
+                ><FaChevronRight /></button>
+              </div>
+            </div>
+          )}
+        </div>
 
-              <tbody>
-                {users.map(u => (
+        <div className="table-container">
+          <table className="custom-table">
+            <thead>
+              <tr>
+                <th>User Details</th>
+                <th>User Role</th>
+                <th>Status</th>
+                <th className="text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {currentRecords.length > 0 ? (
+                currentRecords.map((u) => (
                   <tr key={u.id}>
-                    <td>{u.name}</td>
-                    <td>{u.email}</td>
-                    <td>{u.role?.roleName}</td>
-
-                    <td className={`status-${u.status.toLowerCase()}`}>
-                      {u.status}
-                    </td>
-
                     <td>
-                      {u.status === "ACTIVE" && (
-                        <span className="completed-text">
-                          Approved
-                        </span>
-                      )}
-
-                      {u.status === "PENDING" && (
-                        <>
-                          <button
-                            onClick={() => approveUser(u.id)}
-                            className="action-btn approve-btn"
-                          >
-                            Approve
-                          </button>
-
-                          <button
-                            onClick={() => rejectUser(u.id)}
-                            className="action-btn reject-btn"
-                          >
-                            Reject
-                          </button>
-                        </>
-                      )}
-
-                      {u.status === "REJECTED" && (
-                        <button
-                          onClick={() => approveUser(u.id)}
-                          className="action-btn approve-btn"
-                        >
-                          Approve
-                        </button>
-                      )}
+                      <div className="cell-user">
+                        <span className="name">{u.name}</span>
+                        <span className="sub">{u.email} | {u.phone}</span>
+                      </div>
+                    </td>
+                    <td><span className="role-tag">{u.role?.roleName}</span></td>
+                    <td>
+                      <span className={`status-dot status-${u.status.toLowerCase()}`}>
+                        {u.status}
+                      </span>
+                    </td>
+                    <td className="text-center">
+                      <div className="btn-group">
+                        {u.status === "ACTIVE" && (
+                          <button onClick={() => deactivateUser(u.id)} className="btn-danger-outline">Deactivate</button>
+                        )}
+                        {u.status === "PENDING" && (
+                          <>
+                            <button onClick={() => approveUser(u.id)} className="btn-primary-sm">Approve</button>
+                            <button onClick={() => rejectUser(u.id)} className="btn-danger-sm">Reject</button>
+                          </>
+                        )}
+                        {(u.status === "INACTIVE" || u.status === "REJECTED") && (
+                          <button onClick={() => reactivateUser(u.id)} className="btn-primary-sm">Activate</button>
+                        )}
+                      </div>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-
-            </table>
-          </div>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="4" className="empty-row">No candidates matching your search.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
-
     </div>
   );
 }

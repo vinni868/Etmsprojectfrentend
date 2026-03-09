@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+//import api from "../../api/api";
+import api from "../../api/axiosConfig";
 import "./AdminAttendance.css";
-
-const API_BASE = "http://localhost:8080/api/admin";
 
 const AdminAttendance = () => {
   const [activeTab, setActiveTab] = useState("mark");
@@ -20,7 +19,7 @@ const AdminAttendance = () => {
   useEffect(() => { fetchCourses(); }, []);
 
   const fetchCourses = async () => {
-    const res = await axios.get(`${API_BASE}/courses`, { headers });
+    const res = await api.get(`/admin/courses`, { headers });
     setCourses(res.data);
   };
 
@@ -28,7 +27,7 @@ const AdminAttendance = () => {
     setSelectedCourse(courseId);
     setSelectedBatch("");
     setStudents([]);
-    const res = await axios.get(`${API_BASE}/batches/course/${courseId}`, { headers });
+    const res = await api.get(`/admin/batches/course/${courseId}`, { headers });
     setBatches(res.data);
   };
 
@@ -38,8 +37,7 @@ const AdminAttendance = () => {
     
     setLoading(true);
     try {
-      // Fetches students mapped specifically to this batch
-      const res = await axios.get(`${API_BASE}/attendance/students/${batchId}`, { headers });
+      const res = await api.get(`/admin/attendance/students/${batchId}`, { headers });
       setStudents(res.data.map(s => ({ ...s, status: 'PRESENT' })));
     } catch (err) {
       console.error("Failed to fetch batch students");
@@ -63,7 +61,7 @@ const AdminAttendance = () => {
     }));
 
     try {
-      await axios.post(`${API_BASE}/attendance/mark`, payload, { headers });
+      await api.post(`/admin/attendance/mark`, payload, { headers });
       alert("Success: Attendance stored in database.");
     } catch (e) {
       alert("Failed to save attendance.");

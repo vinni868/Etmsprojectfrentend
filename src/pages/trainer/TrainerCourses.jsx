@@ -67,60 +67,19 @@ function TrainerCourses() {
 
   return (
     <div className="trainer-app-container">
-      {/* CORPORATE NAV BAR */}
-      <nav className="corporate-nav">
-        <div className="nav-branding">
-          <div className="logo-square"><FaGraduationCap /></div>
-          <span className="brand-name">EduPortal <small>Trainer</small></span>
-        </div>
+      
 
-        <div className="nav-center">
+      <main className="dashboard-content">
+       
+
+        {/* STEP 1: COURSE SELECTION */}
+        <section className="section-block">
+          <div className="nav-center">
           <div className="nav-search">
             <FaSearch className="s-icon" />
             <input type="text" placeholder="Search for courses or students..." />
           </div>
         </div>
-
-        <div className="nav-right">
-          <button className="icon-btn"><FaBell /><span className="badge"></span></button>
-          <div className="user-profile-wrapper" onClick={() => setShowUserMenu(!showUserMenu)}>
-            <div className="profile-info">
-              <span className="u-name">{user?.name || "Trainer"}</span>
-              <span className="u-role">Lead Instructor</span>
-            </div>
-            <div className="u-avatar">{user?.name?.charAt(0)}</div>
-            
-            {showUserMenu && (
-              <div className="dropdown-panel">
-                <button onClick={() => navigate("/profile")}><FaUser /> Profile</button>
-                <button onClick={() => navigate("/settings")}><FaCog /> Settings</button>
-                <hr />
-                <button className="logout" onClick={() => { localStorage.clear(); navigate("/login"); }}>
-                  <FaSignOutAlt /> Sign Out
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </nav>
-
-      <main className="dashboard-content">
-        {/* BREADCRUMB */}
-        <div className="breadcrumb-bar">
-          <span onClick={() => navigate("/dashboard")}>Dashboard</span>
-          <FaChevronRight className="sep" />
-          <span className={!selectedCourse ? "active" : ""}>Courses</span>
-          {selectedCourse && (
-            <>
-              <FaChevronRight className="sep" />
-              <span className={!selectedBatch ? "active" : ""}>{selectedCourse.courseName}</span>
-            </>
-          )}
-        </div>
-
-        {/* STEP 1: COURSE SELECTION */}
-        <section className="section-block">
-          <h2 className="section-title">Select a Course</h2>
           <div className="card-grid">
             {courses.map(course => (
               <div 
@@ -167,7 +126,7 @@ function TrainerCourses() {
           <section className="section-block anim-fade-in">
             <div className="section-header-flex">
               <h2 className="section-title"><FaUsers /> Enrolled Students ({students.length})</h2>
-              <button className="btn-export"><FaFileExport /> Export List</button>
+              
             </div>
             <div className="data-table-container">
               {loading.students ? <div className="loader">Loading Students...</div> : 
