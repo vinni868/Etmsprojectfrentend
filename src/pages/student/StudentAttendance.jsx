@@ -82,7 +82,7 @@ function StudentAttendance() {
   const fetchAttendanceData = async () => {
     setLoading(true);
     try {
-      let url = `http://localhost:8080/api/student/attendance/details/${studentId}?batchId=${selectedBatch}`;
+      let url = `/api/student/attendance/details/${studentId}?batchId=${selectedBatch}`;
       if (filter.fromDate) url += `&from=${filter.fromDate}`;
       if (filter.toDate) url += `&to=${filter.toDate}`;
 
@@ -169,7 +169,7 @@ function StudentAttendance() {
 
         <div className="metric-card present">
           <FaUserCheck className="metric-icon" />
-          <div className="metric-content">
+          <div className="metric-content">+
             <h3>{summary.presentCount}</h3>
             <p>Present</p>
           </div>

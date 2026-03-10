@@ -31,7 +31,7 @@ function StudentDashboard() {
 
         // Inside fetchDashboard
 const res = await axios.get(
-  "http://localhost:8080/api/student/dashboard",
+  "/api/student/dashboard",
   {
     headers: { Authorization: `Bearer ${token}` },
     withCredentials: true
