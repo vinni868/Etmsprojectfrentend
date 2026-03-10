@@ -69,28 +69,60 @@ const Navbar = () => {
               <ul className="nav-menu-list">
                 <li><NavLink to="/" end className="nav-link-anchor" onClick={closeMenu}>Home</NavLink></li>
 
-                {/* Courses Mega Menu */}
-                <li className={`has-mega-menu ${mobileDrop === 'courses' ? 'mob-active' : ''}`}>
-                  <div className="nav-link-anchor" onClick={() => handleMobileDrop('courses')}>
-                    <span>Courses <span className="promo-tag">OFFER</span></span>
-                    <FaChevronDown className={`chev-icon ${mobileDrop === 'courses' ? 'rotate' : ''}`} />
-                  </div>
-                  <div className="mega-menu-panel">
-                    <div className="mega-grid-wrapper">
-                      <div className="mega-column">
-                        <h3>Certification</h3>
-                        <Link to="/course/ai" onClick={closeMenu}>AI & ML <span className="trend-label">New</span></Link>
-                        <Link to="/course/web" onClick={closeMenu}>Web Development</Link>
-                      </div>
-                      <div className="mega-column">
-                        <h3>Career</h3>
-                        <Link to="/placement/fullstack" onClick={closeMenu}>Full Stack Dev</Link>
-                        <Link to="/placement/uiux" onClick={closeMenu}>UI/UX Design</Link>
-                      </div>
-                    </div>
-                  </div>
-                </li>
+{/* Integrated Courses Mega Menu */}
+<li className={`has-mega-menu ${mobileDrop === 'courses' ? 'mob-active' : ''}`}>
+  <div className="nav-link-anchor" onClick={() => handleMobileDrop('courses')}>
+    <span>Courses <span className="promo-tag">NEW</span></span>
+    <FaChevronDown className={`chev-icon ${mobileDrop === 'courses' ? 'rotate' : ''}`} />
+  </div>
 
+  <div className="mega-menu-panel">
+    <div className="mega-grid-wrapper" style={{ display: 'flex', gap: '40px', padding: '20px' }}>
+      
+      {/* Column 1: IT Courses */}
+      <div className="mega-column">
+        <h3 style={{ fontSize: '1.1rem', color: '#333', marginBottom: '15px', borderBottom: '2px solid #0056b3', paddingBottom: '5px' }}>
+          IT Courses
+        </h3>
+        <Link to="https://appteknow.com/java-training-in-bangalore-from-it-companies-with-ai-tools/" onClick={closeMenu}>
+          Full Stack Java with AI
+        </Link>
+        <Link to="https://appteknow.com/python-training-in-bangalore-from-it-companies-with-ai-tools/" onClick={closeMenu}>
+          Python Training with AI tools
+        </Link>
+        <Link to="https://appteknow.com/software-testing-selenium-with-al-from-it-companies/" onClick={closeMenu}>
+          Software Testing (Selenium)
+        </Link>
+        <Link to="https://appteknow.com/mern-training-in-bangalore-from-it-companies-with-ai-tools-2/" onClick={closeMenu}>
+          MERN Stack Development
+        </Link>
+        <Link to="https://appteknow.com/cyber-security-courses-in-bangalore/" onClick={closeMenu}>
+          Cyber Security
+        </Link>
+      </div>
+
+      {/* Column 2: Non-IT Courses */}
+      <div className="mega-column">
+        <h3 style={{ fontSize: '1.1rem', color: '#333', marginBottom: '15px', borderBottom: '2px solid #ffaa00', paddingBottom: '5px' }}>
+          Non IT Courses
+        </h3>
+        <Link to="https://appteknow.com/data-analytics-course-in-bangalore-from-it-companies/" onClick={closeMenu}>
+          Data Analytics
+        </Link>
+        <Link to="https://appteknow.com/digital-marketing-courses/" onClick={closeMenu}>
+          Digital Marketer
+        </Link>
+        <Link to="https://appteknow.com/tally-training-in-bangalore/" onClick={closeMenu}>
+          Tally ERP 9 + GST
+        </Link>
+        <Link to="https://appteknow.com/softskills-aptitude-training/" onClick={closeMenu}>
+          Softskills + Aptitude
+        </Link>
+      </div>
+
+    </div>
+  </div>
+</li>
                 {/* Jobs Mega Menu */}
                 <li className={`has-mega-menu ${mobileDrop === 'jobs' ? 'mob-active' : ''}`}>
                   <div className="nav-link-anchor" onClick={() => handleMobileDrop('jobs')}>

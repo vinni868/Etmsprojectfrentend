@@ -8,7 +8,7 @@
 
 /* Hero Section */
 .hero-section {
-  background: url('https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1920&q=80') center/cover;
+background: url('https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1920&q=80') center/cover;
   height: 85vh;
   position: relative;
 
@@ -110,4 +110,30 @@
 
 .btn-primary-blue:active {
   transform: translateY(0);
+}
+/* Styling for course title links */
+.course-title-link {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.3s ease;
+}
+
+.course-title-link:hover {
+    color: #007bff; /* Adjust to your brand blue */
+}
+
+/* Ensure buttons using Link look like buttons */
+.btn-consult, .btn-blue-solid, .btn-primary-blue-link {
+    display: inline-block;
+    text-decoration: none;
+    text-align: center;
+}
+
+.btn-consult {
+    width: 100%; /* Keeps it full width in the card footer */
+    padding: 10px 0;
+    background-color: #007bff;
+    color: white;
+    border-radius: 4px;
+    font-weight: bold;
 }

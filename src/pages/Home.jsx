@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { Link } from 'react-router-dom'; // Ensure react-router-dom is installed
 import { 
   FaSearch, FaUserCheck, FaUsersCog, FaCode, 
   FaBriefcase, FaGraduationCap, FaCertificate, 
@@ -8,45 +9,59 @@ import '../styles/Home.css';
 
 const Home = () => {
     const [searchQuery, setSearchQuery] = useState("");
+    const programsRef = useRef(null);
 
+    // Added 'path' for internal navigation
     const programs = [
         {
             title: "Full Stack Java Development",
+            path: "/java-full-stack",
             desc: "Learn Java, Spring Boot, Angular to build enterprise-grade applications.",
             features: ["Strong Java + Spring Boot", "Frontend with React", "IT Company Projects", "6 Months Exp. Certificate", "AI Powered Placement"],
-            color: "blue"
         },
         {
             title: "Full Stack Python Development",
+            path: "/python-full-stack",
             desc: "Master Python, Django, React for full stack web development.",
             features: ["Strong Python + Django", "Frontend with React", "IT Company Projects", "6 Months Exp. Certificate", "AI Powered Placement"],
-            color: "blue"
         },
         {
             title: "Software Testing & Automation",
+            path: "/testing-automation",
             desc: "Train in Manual, Selenium & API Testing for QA careers.",
             features: ["Manual + Selenium Automation", "Rest API Training", "IT Company Projects", "6 Months Exp. Certificate", "AI Powered Placement"],
-            color: "blue"
         },
         {
             title: "MERN Stack Development",
+            path: "/mern-stack",
             desc: "Build apps with MongoDB, Express, React, Node.js.",
             features: ["End-to-end JavaScript", "API Integrations", "IT Company Projects", "6 Months Exp. Certificate", "AI Powered Placement"],
-            color: "blue"
         },
         {
             title: "Data Analytics",
+            path: "/data-analytics",
             desc: "Learn SQL, Power BI, Python to analyze and visualize data.",
             features: ["PowerBI, SQL & Python", "Dashboard Creation", "IT Company Projects", "6 Months Exp. Certificate", "AI Powered Placement"],
-            color: "blue"
         },
         {
             title: "Cyber Security",
+            path: "/cyber-security",
             desc: "Gain skills in ethical hacking & cyber defense.",
             features: ["Ethical Hacking Tools", "Vulnerability Testing", "Security Compliance", "IT & BFSI Demand", "Placement Guarantee"],
-            color: "blue"
         }
     ];
+
+    const handleSearch = (e) => {
+        if (e) e.preventDefault();
+        if (programsRef.current) {
+            programsRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
+    const filteredPrograms = programs.filter(program => 
+        program.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        program.desc.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     return (
         <div className="home-page">
@@ -61,16 +76,16 @@ const Home = () => {
                             </p>
 
                             <div className="search-wrapper">
-                                <div className="search-inner">
-                                    <FaSearch className="search-icon" />
+                                <form className="search-inner" onSubmit={handleSearch}>
+                                    
                                     <input 
                                         type="text" 
                                         placeholder="Search for courses (e.g. Java, Python, Testing)..." 
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                     />
-                                    <button className="btn-search">Search</button>
-                                </div>
+                                    <button type="submit" className="btn-search">Search</button>
+                                </form>
                             </div>
                             
                             <div className="hero-badges">
@@ -83,29 +98,44 @@ const Home = () => {
             </section>
 
             {/* PROGRAMS SECTION */}
-            <section className="programs-section">
+            <section className="programs-section" ref={programsRef}>
                 <div className="container">
                     <div className="section-header">
                         <span className="sub-tag">CAREER IN 2026</span>
-                        <h2 className="section-heading">Our Top Training Programs For You</h2>
+                        <h2 className="section-heading">
+                            {searchQuery ? `Showing Results for "${searchQuery}"` : "Our Top Training Programs For You"}
+                        </h2>
                     </div>
+                    
                     <div className="programs-grid">
-                        {programs.map((item, idx) => (
-                            <div className="program-card" key={idx}>
-                                <div className="card-body">
-                                    <h3>{item.title}</h3>
-                                    <p>{item.desc}</p>
-                                    <ul className="feature-list">
-                                        {item.features.map((f, i) => (
-                                            <li key={i}><FaCheckCircle className="check-icon" /> {f}</li>
-                                        ))}
-                                    </ul>
+                        {filteredPrograms.length > 0 ? (
+                            filteredPrograms.map((item, idx) => (
+                                <div className="program-card" key={idx}>
+                                    <div className="card-body">
+                                        <Link to={item.path} className="course-title-link">
+                                            <h3>{item.title}</h3>
+                                        </Link>
+                                        <p>{item.desc}</p>
+                                        <ul className="feature-list">
+                                            {item.features.map((f, i) => (
+                                                <li key={i}><FaCheckCircle className="check-icon" /> {f}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                    <div className="card-footer">
+                                        {/* Updated to Link component */}
+                                        <Link to={item.path} className="btn-consult">
+                                            Schedule a consultation
+                                        </Link>
+                                    </div>
                                 </div>
-                                <div className="card-footer">
-                                    <button className="btn-consult">Schedule a consultation</button>
-                                </div>
+                            ))
+                        ) : (
+                            <div className="no-results-box" style={{ textAlign: 'center', width: '100%', padding: '50px' }}>
+                                <h3>No courses found for "{searchQuery}"</h3>
+                                <p>Try searching for "Java", "Python", or "MERN".</p>
                             </div>
-                        ))}
+                        )}
                     </div>
                 </div>
             </section>
@@ -123,7 +153,7 @@ const Home = () => {
                         <p>
                             Starting in the year 2000, we have a <strong>20+ years Legacy</strong>, having trained over 70,000 students and placed them in reputed MNCs.
                         </p>
-                        <button className="btn-primary-blue">Learn More About Us</button>
+                        <Link to="/about" className="btn-primary-blue-link">Learn More About Us</Link>
                     </div>
                     <div className="why-choose-grid">
                         <div className="why-card">
@@ -181,8 +211,8 @@ const Home = () => {
                     <h2>Ready to start your professional journey?</h2>
                     <p>Join the thousands of students already working in Top MNCs.</p>
                     <div className="cta-btns">
-                        <button className="btn-blue-solid">Book Free Demo Class</button>
-                        <button className="btn-blue-outline">Talk to Counsellor</button>
+                        <Link to="/demo" className="btn-blue-solid">Book Free Demo Class</Link>
+                        <Link to="/contact" className="btn-blue-outline">Talk to Counsellor</Link>
                     </div>
                 </div>
             </section>
