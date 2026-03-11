@@ -1,0 +1,1 @@
+import{n as e}from"./index-BVG1u803.js";export default e();
