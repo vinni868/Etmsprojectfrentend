@@ -11,21 +11,21 @@ const COURSE_DATA = [
     category: "IT Courses",
     borderActive: "#0056b3",
     links: [
-      { name: "Full Stack Java with AI", url: "/java-ai" },
-      { name: "Python Training", url: "/python-ai" },
-      { name: "Software Testing", url: "/testing" },
-      { name: "MERN Stack", url: "/mern" },
-      { name: "Cyber Security", url: "/cyber" },
+      { name: "Full Stack Java with AI", url: "https://appteknow.com/java-training-in-bangalore-from-it-companies-with-ai-tools/" },
+      { name: "Python Training", url: "https://appteknow.com/python-training-in-bangalore-from-it-companies-with-ai-tools/" },
+      { name: "Software Testing", url: "https://appteknow.com/software-testing-selenium-with-al-from-it-companies/" },
+      { name: "MERN Stack", url: "https://appteknow.com/mern-training-in-bangalore-from-it-companies-with-ai-tools-2/" },
+      { name: "Cyber Security", url: "https://appteknow.com/cyber-security-courses-in-bangalore/" },
     ]
   },
   {
     category: "Non-IT Courses",
     borderActive: "#ffaa00",
     links: [
-      { name: "Data Analytics", url: "/data-analytics" },
-      { name: "Digital Marketer", url: "/digital-marketing" },
-      { name: "Tally ERP 9", url: "/tally" },
-      { name: "Softskills", url: "/softskills" },
+      { name: "Data Analytics", url: "https://appteknow.com/data-analytics-course-in-bangalore-from-it-companies/" },
+      { name: "Digital Marketer", url: "https://appteknow.com/digital-marketing-courses/" },
+      { name: "Tally ERP 9", url: "https://appteknow.com/tally-training-in-bangalore/" },
+      { name: "Softskills", url: "https://appteknow.com/softskills-aptitude-training/" },
     ]
   }
 ];

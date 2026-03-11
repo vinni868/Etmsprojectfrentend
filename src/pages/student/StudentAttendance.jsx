@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+
+import api from "../../api/axiosConfig";  
 import { 
   FaCalendarCheck, 
   FaUserCheck, 
@@ -43,7 +44,7 @@ function StudentAttendance() {
 
   const fetchStudentCourses = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/api/student/my-courses", {
+      const res = await api.get("/student/my-courses", {
         headers: { Authorization: `Bearer ${token}` },
         withCredentials: true,
       });
@@ -82,11 +83,11 @@ function StudentAttendance() {
   const fetchAttendanceData = async () => {
     setLoading(true);
     try {
-      let url = `/api/student/attendance/details/${studentId}?batchId=${selectedBatch}`;
+      let url = `/student/attendance/details/${studentId}?batchId=${selectedBatch}`;
       if (filter.fromDate) url += `&from=${filter.fromDate}`;
       if (filter.toDate) url += `&to=${filter.toDate}`;
 
-      const res = await axios.get(url, {
+      const res = await api.get(url, {
         headers: { Authorization: `Bearer ${token}` },
         withCredentials: true,
       });
@@ -169,7 +170,7 @@ function StudentAttendance() {
 
         <div className="metric-card present">
           <FaUserCheck className="metric-icon" />
-          <div className="metric-content">+
+          <div className="metric-content">
             <h3>{summary.presentCount}</h3>
             <p>Present</p>
           </div>

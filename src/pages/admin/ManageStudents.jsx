@@ -160,7 +160,6 @@ function ManageStudents() {
               </button>
             </div>
 
-            <div className="section-divider">OR</div>
 
             {/* STEP 2: BATCH ALLOTMENT */}
             <div className="form-section-box">

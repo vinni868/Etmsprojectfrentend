@@ -260,3 +260,78 @@
 
 .refresh-btn { background: transparent; border: none; cursor: pointer; color: #a3aed0; font-size: 1.1rem; }
 .refresh-btn:hover { color: #4318ff; }
+/* Ensure dropdown appears above welcome text */
+
+.dropdown-menu{
+  z-index: 9999;
+}
+
+/* If academic dropdown has parent */
+
+.academic-dropdown{
+  position: absolute;
+  top: 60px;
+  z-index: 9999;
+}
+/* Upcoming classes scroll area */
+
+.schedule-scroll{
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+/* Hide scrollbar */
+
+.schedule-scroll::-webkit-scrollbar{
+  width: 0px;
+}
+
+.schedule-scroll{
+  scrollbar-width: none;
+}
+/* =========================
+   PAGINATION DESIGN
+========================= */
+
+.pagination-box{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-top: 20px;
+  padding-top: 10px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.pagination-box button{
+  background: #4318ff;
+  color: white;
+  border: none;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.pagination-box button:hover{
+  background: #3210d4;
+  transform: translateY(-1px);
+}
+
+.pagination-box button:disabled{
+  background: #cbd5f5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.pagination-box span{
+  font-size: 13px;
+  font-weight: 600;
+  color: #2b3674;
+  background: #f4f7fe;
+  padding: 6px 12px;
+  border-radius: 6px;
+}

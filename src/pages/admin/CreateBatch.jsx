@@ -249,7 +249,7 @@ function CreateBatch() {
 
                   <div className="card-actions">
                     <button onClick={() => handleEdit(batch)} className="edit-act"><FaEdit /> Edit</button>
-                    <button onClick={() => handleDelete(batch.id)} className="delete-act"><FaTrashAlt /> Delete</button>
+                    <button onClick={() => handleDelete(batch.id)} className="delete-act"><FaTrashAlt /> InActivate</button>
                   </div>
                 </div>
               ))
